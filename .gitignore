@@ -16,3 +16,6 @@ Thumbs.db
 .vscode/*
 !.vscode/extensions.json
 .idea
+
+# Fontshare specimen fonts: ITF FFL forbids redistributing the files, so they are downloaded, never committed.
+.storybook/specimen-fonts/

@@ -56,7 +56,7 @@ export default tseslint.config(
     },
   },
   {
-    files: ['*.config.{js,ts}', 'e2e/**', '.storybook/**'],
+    files: ['*.config.{js,ts}', 'e2e/**', '.storybook/**', 'scripts/**'],
     languageOptions: { globals: globals.node },
   },
 );

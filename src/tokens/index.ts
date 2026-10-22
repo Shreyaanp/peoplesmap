@@ -51,7 +51,7 @@ export type ThemeName = keyof typeof themes;
 
 export const space = { 1: 4, 2: 8, 3: 12, 4: 16, 5: 20, 6: 24, 8: 32, 10: 40, 12: 48, 16: 64 } as const;
 export const radius = { sm: 8, md: 12, lg: 20, xl: 28, pill: 999 } as const;
-export const size = { touch: 44, search: 56 } as const;
+export const size = { touch: 44, search: 56, iconSm: 20, icon: 24, iconLg: 32 } as const;
 export const z = { map: 0, glows: 10, pins: 20, chrome: 30, sheet: 40, overlay: 50, toast: 60 } as const;
 
 export const cssVar = {

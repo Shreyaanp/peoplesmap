@@ -22,7 +22,9 @@
     "lhci": "lhci autorun",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "check": "npm run typecheck && npm run lint && npm run lint:css && npm run test"
+    "check": "npm run typecheck && npm run lint && npm run lint:css && npm run test",
+    "icons": "node scripts/icons.ts",
+    "fonts:specimen": "node scripts/specimen-fonts.ts"
   },
   "dependencies": {
     "@tanstack/react-query": "5.104.1",
@@ -38,7 +40,10 @@
     "@axe-core/playwright": "4.13.0",
     "@eslint-react/eslint-plugin": "5.24.9",
     "@eslint/js": "10.0.1",
+    "@fontsource-variable/geist": "5.3.0",
+    "@fontsource-variable/plus-jakarta-sans": "5.3.0",
     "@lhci/cli": "0.15.1",
+    "@phosphor-icons/core": "2.1.1",
     "@playwright/test": "1.64.0",
     "@size-limit/file": "14.2.0",
     "@storybook/react-vite": "10.6.2",

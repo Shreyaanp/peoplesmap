@@ -1,0 +1,26 @@
+/*
+ * Typeface candidates for the Specimen/ stories. Storybook only: the app bundle never loads these.
+ * General Sans and Satoshi (ITF FFL 2.0) are downloaded by `npm run fonts:specimen`;
+ * Plus Jakarta Sans and Geist (OFL-1.1) are imported from @fontsource-variable in preview.ts.
+ */
+
+@font-face {
+  font-family: 'General Sans';
+  src: url('/specimen-fonts/GeneralSans-Variable.woff2') format('woff2');
+  font-weight: 200 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: Satoshi;
+  src: url('/specimen-fonts/Satoshi-Variable.woff2') format('woff2');
+  font-weight: 300 900;
+  font-display: swap;
+}
+
+:root {
+  --font-candidate-general-sans: 'General Sans', system-ui, sans-serif;
+  --font-candidate-satoshi: satoshi, system-ui, sans-serif;
+  --font-candidate-plus-jakarta-sans: 'Plus Jakarta Sans Variable', system-ui, sans-serif;
+  --font-candidate-geist: 'Geist Variable', system-ui, sans-serif;
+}

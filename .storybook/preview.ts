@@ -2,6 +2,10 @@ import type { Preview } from '@storybook/react-vite';
 import '../src/tokens/tokens.css';
 import '../src/tokens/motion.css';
 import '../src/app/global.css';
+// Typeface candidates for the Specimen/ stories only; the app never imports these.
+import '@fontsource-variable/geist';
+import '@fontsource-variable/plus-jakarta-sans';
+import './specimen-fonts.css';
 
 const preview: Preview = {
   parameters: {

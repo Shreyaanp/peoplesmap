@@ -65,6 +65,9 @@
   /* Sizes. Touch targets are never smaller than 44px (Fitts's Law; checked in CI). */
   --size-touch: 44px;
   --size-search: 56px;
+  --size-icon-sm: 20px;
+  --size-icon: 24px;
+  --size-icon-lg: 32px;
 
   /* Z-index layers. */
   --z-map: 0;

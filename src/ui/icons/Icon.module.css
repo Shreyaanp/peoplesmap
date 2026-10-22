@@ -1,0 +1,21 @@
+.icon {
+  flex: none;
+  width: var(--size-icon);
+  height: var(--size-icon);
+}
+
+.icon[data-size='sm'] {
+  width: var(--size-icon-sm);
+  height: var(--size-icon-sm);
+}
+
+.icon[data-size='lg'] {
+  width: var(--size-icon-lg);
+  height: var(--size-icon-lg);
+}
+
+/* Duotone layer: grey by default; set --icon-duotone-fill: var(--color-accent) for an active state. */
+.duotone {
+  fill: var(--icon-duotone-fill, currentcolor);
+  opacity: var(--icon-duotone-opacity, 0.2);
+}
