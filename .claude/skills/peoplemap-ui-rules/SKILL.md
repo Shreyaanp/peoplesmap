@@ -44,9 +44,25 @@ Use React Aria hooks (`react-aria` / `react-stately`) for hard accessibility beh
 | ----------------------------------------------------------- | ----------------------------------------------- |
 | Map camera, pin positions (per frame)                       | Outside React: MapLibre plus refs, one rAF loop |
 | Shareable UI (query, open profile)                          | URL                                             |
-| Client UI (sheet height, selection)                         | Zustand with selectors                          |
+| Client UI (sheet height, selection, search results)         | React Context holding a store, read by selector |
 | Server data                                                 | TanStack Query (mock API via MSW for now)       |
 | Rarely-changing settings (theme, reduce-motion, map handle) | React Context                                   |
+
+## Context rules
+
+React Context is our client-state tool. Every reader of a context re-renders when its value changes, so:
+
+1. **One context per area**, never one AppContext: `MapControllerContext`, `ThemeContext`, `SearchContext`, `SheetContext`, later `SessionContext`.
+2. **Split state from actions.** Each area has a state context and an actions context. The actions value is created once and never changes, so components that only call actions never re-render on state changes.
+3. **Contexts are private.** Create them only in `src/state/<area>.tsx`, with `null` as default and a `displayName`. Export only the Provider and typed hooks (`useSearchState()`, `useSearchActions()`). Each hook throws a clear error outside its Provider.
+4. **Provider values are always stable**: memoized or created once. Never an inline object.
+5. **Never in context:** per-frame values (camera, drag position, animation progress) live in refs and CSS variables; URL state (query, open profile) lives in the router and is not duplicated.
+6. **Many partial readers → store + selector.** For areas many components read part of (Search, Sheet), the context holds a stable store object (`getState`, `subscribe`, actions). Components read slices with a selector hook built on `useSyncExternalStore`, so only components whose slice changed re-render.
+7. **One `src/state/AppProviders.tsx`** composes all Providers in a deliberate, commented order (map controller before Search, because Search calls `flyTo`).
+
+Every new context ships with two unit tests: its hooks throw outside the Provider, and a component that only uses actions does not re-render when state changes (render counter).
+
+Enforced by ESLint: `createContext` / `useContext` only in `src/state/`; no exported raw `*Context`; `@eslint-react/no-unstable-context-value`; `@eslint-react/no-missing-context-display-name`; `@eslint-react/naming-convention-context-name`.
 
 ## Sample data
 

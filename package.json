@@ -32,11 +32,11 @@
     "react-aria": "3.53.0",
     "react-dom": "19.3.0",
     "react-stately": "3.51.0",
-    "supercluster": "9.1.0",
-    "zustand": "5.0.15"
+    "supercluster": "9.1.0"
   },
   "devDependencies": {
     "@axe-core/playwright": "4.13.0",
+    "@eslint-react/eslint-plugin": "5.24.9",
     "@eslint/js": "10.0.1",
     "@lhci/cli": "0.15.1",
     "@playwright/test": "1.64.0",

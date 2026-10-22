@@ -19,17 +19,19 @@ npm run size
 npm run test:e2e
 ```
 
-| Gate                                   | Catches                                                    |
-| -------------------------------------- | ---------------------------------------------------------- |
-| Stylelint tokens rules                 | Raw colours, pure #000/#fff, non-token z-index/shadow/font |
-| Stylelint high-performance-animation   | Animating anything except transform/opacity                |
-| ESLint motion rule                     | Inline duration/easing/spring numbers                      |
-| `tokens.test.ts`                       | CSS and TS tokens drifting apart                           |
-| `e2e/a11y.spec.ts` (axe, light + dark) | Contrast, labels, landmarks                                |
-| `e2e/touch-targets.spec.ts`            | Interactive elements under 44px                            |
-| `e2e/reduced-motion.spec.ts`           | Animations ignoring reduce-motion                          |
-| size-limit                             | Bundle growth past budget                                  |
-| Lighthouse CI (in GitHub Actions)      | Slow first paint, layout shift, blocking time              |
+| Gate                                   | Catches                                                                        |
+| -------------------------------------- | ------------------------------------------------------------------------------ |
+| Stylelint tokens rules                 | Raw colours, pure #000/#fff, non-token z-index/shadow/font                     |
+| Stylelint high-performance-animation   | Animating anything except transform/opacity                                    |
+| ESLint motion rule                     | Inline duration/easing/spring numbers                                          |
+| `tokens.test.ts`                       | CSS and TS tokens drifting apart                                               |
+| ESLint context rules                   | Contexts outside `src/state/`, exported raw contexts, unstable Provider values |
+| Context unit tests                     | Hooks outside Provider not throwing; action-only readers re-rendering          |
+| `e2e/a11y.spec.ts` (axe, light + dark) | Contrast, labels, landmarks                                                    |
+| `e2e/touch-targets.spec.ts`            | Interactive elements under 44px                                                |
+| `e2e/reduced-motion.spec.ts`           | Animations ignoring reduce-motion                                              |
+| size-limit                             | Bundle growth past budget                                                      |
+| Lighthouse CI (in GitHub Actions)      | Slow first paint, layout shift, blocking time                                  |
 
 ## 2. Look at it
 
