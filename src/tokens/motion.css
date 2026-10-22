@@ -1,0 +1,28 @@
+/*
+ * Motion tokens: "Liquid World, Crisp Glass". Mirrored in src/motion/tokens.ts.
+ * Liquid = the map: slow start, long settle. Crisp = the UI: fast out, small spring.
+ */
+
+:root {
+  --ease-liquid: cubic-bezier(0.45, 0, 0.15, 1);
+  --ease-liquid-settle: cubic-bezier(0.22, 1, 0.36, 1);
+  --duration-liquid-short: 600ms;
+  --duration-liquid: 900ms;
+  --duration-liquid-long: 1200ms;
+  --ease-crisp: cubic-bezier(0.2, 0, 0, 1);
+  --ease-crisp-spring: cubic-bezier(0.34, 1.36, 0.64, 1);
+  --duration-crisp-short: 150ms;
+  --duration-crisp: 220ms;
+  --duration-crisp-long: 300ms;
+  --duration-fade: 200ms;
+
+  /* Components multiply movement distances by this; 0 under reduce-motion leaves only the fade. */
+  --motion-scale: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-scale: 0;
+    --ease-crisp-spring: var(--ease-crisp);
+  }
+}

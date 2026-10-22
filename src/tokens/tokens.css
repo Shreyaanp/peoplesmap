@@ -1,0 +1,139 @@
+/*
+ * peoplemap design tokens — "Grey World, Colorful People".
+ * The ONLY place (with motion.css) where raw colour values may appear; Stylelint enforces this.
+ * Mirrored in src/tokens/index.ts (tokens.test.ts keeps the two in sync).
+ */
+
+:root {
+  /* Amber: the one signature colour. People, glows and the single main action only. */
+  --amber-50: #fff6e6;
+  --amber-100: #ffe9c2;
+  --amber-200: #ffd88f;
+  --amber-300: #ffc15a;
+  --amber-400: #f8a73a;
+  --amber-500: #ec8b1e;
+  --amber-600: #cc6e12;
+  --amber-700: #a3530e;
+  --amber-800: #7a3d0c;
+  --amber-900: #522808;
+
+  /* Glow gradient stops: cream core -> honey amber -> burnt amber -> transparent. Never a flat circle. */
+  --glow-core: #fff4dc;
+  --glow-honey: #ffc35c;
+  --glow-burnt: #d9700f;
+  --glow-edge: rgb(217 112 15 / 0%);
+  --glow-gradient: radial-gradient(
+    circle,
+    var(--glow-core) 0%,
+    var(--glow-honey) 28%,
+    rgb(217 112 15 / 55%) 58%,
+    var(--glow-edge) 100%
+  );
+
+  /* Typeface: placeholder system stack. Final typeface to be chosen (3–4 candidates on real screens). */
+  --font-sans: system-ui, -apple-system, 'Segoe UI', roboto, sans-serif;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-md: 1rem;
+  --font-size-lg: 1.25rem;
+  --font-size-xl: 1.75rem;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-bold: 650;
+  --line-height-tight: 1.2;
+  --line-height-body: 1.5;
+
+  /* Spacing: 4px base. */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* Radius. */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 28px;
+  --radius-pill: 999px;
+
+  /* Sizes. Touch targets are never smaller than 44px (Fitts's Law; checked in CI). */
+  --size-touch: 44px;
+  --size-search: 56px;
+
+  /* Z-index layers. */
+  --z-map: 0;
+  --z-glows: 10;
+  --z-pins: 20;
+  --z-chrome: 30;
+  --z-sheet: 40;
+  --z-overlay: 50;
+  --z-toast: 60;
+
+  /* Frosted glass, used sparingly. */
+  --glass-blur: 16px;
+
+  /* Light theme (default): warm grey world. */
+  color-scheme: light;
+
+  --color-map: #e9e5df;
+  --color-bg: #efebe6;
+  --color-surface: #f7f4f0;
+  --color-surface-raised: #fbf9f6;
+  --color-glass: rgb(247 244 240 / 72%);
+  --color-border: #d8d1c8;
+  --color-ink: #1f1b17;
+  --color-ink-secondary: #5a5249;
+  --color-ink-muted: #6f665c;
+  --color-accent: var(--amber-500);
+  --color-accent-ink: #1f1b17;
+  --color-focus: var(--amber-700);
+  --shadow-sheet: 0 -8px 32px rgb(60 44 28 / 12%);
+  --shadow-raised: 0 4px 16px rgb(60 44 28 / 10%);
+}
+
+/* Dark theme: charcoal with a brown undertone. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+
+    --color-map: #1c1916;
+    --color-bg: #201c19;
+    --color-surface: #2a2521;
+    --color-surface-raised: #332d28;
+    --color-glass: rgb(42 37 33 / 72%);
+    --color-border: #463e37;
+    --color-ink: #f3eee7;
+    --color-ink-secondary: #cbc1b5;
+    --color-ink-muted: #a59a8e;
+    --color-accent: var(--amber-400);
+    --color-accent-ink: #1f1b17;
+    --color-focus: var(--amber-300);
+    --shadow-sheet: 0 -8px 32px rgb(8 5 3 / 45%);
+    --shadow-raised: 0 4px 16px rgb(8 5 3 / 40%);
+  }
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+
+  --color-map: #1c1916;
+  --color-bg: #201c19;
+  --color-surface: #2a2521;
+  --color-surface-raised: #332d28;
+  --color-glass: rgb(42 37 33 / 72%);
+  --color-border: #463e37;
+  --color-ink: #f3eee7;
+  --color-ink-secondary: #cbc1b5;
+  --color-ink-muted: #a59a8e;
+  --color-accent: var(--amber-400);
+  --color-accent-ink: #1f1b17;
+  --color-focus: var(--amber-300);
+  --shadow-sheet: 0 -8px 32px rgb(8 5 3 / 45%);
+  --shadow-raised: 0 4px 16px rgb(8 5 3 / 40%);
+}

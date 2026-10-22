@@ -1,0 +1,54 @@
+.bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: var(--size-search);
+  padding: 0 var(--space-2) 0 var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-glass);
+  box-shadow: var(--shadow-raised);
+  backdrop-filter: blur(var(--glass-blur));
+}
+
+.bar:focus-within {
+  border-color: var(--color-focus);
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  color: var(--color-ink);
+  font: inherit;
+  outline: none;
+}
+
+.input::placeholder {
+  color: var(--color-ink-muted);
+}
+
+/* Hide the browser's own clear button; we render ours. */
+.input::-webkit-search-cancel-button {
+  appearance: none;
+}
+
+.clear {
+  display: grid;
+  place-items: center;
+  width: var(--size-touch);
+  height: var(--size-touch);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-ink-secondary);
+  font-size: var(--font-size-lg);
+  cursor: pointer;
+  transition: transform var(--duration-crisp) var(--ease-crisp-spring);
+}
+
+.clear:active {
+  transform: scale(0.92);
+}

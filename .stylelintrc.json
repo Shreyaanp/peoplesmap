@@ -1,0 +1,32 @@
+{
+  "extends": ["stylelint-config-standard"],
+  "plugins": ["stylelint-high-performance-animation", "stylelint-declaration-strict-value"],
+  "rules": {
+    "plugin/no-low-performance-animation-properties": true,
+    "scale-unlimited/declaration-strict-value": [
+      ["/color$/", "fill", "stroke", "background", "box-shadow", "z-index", "font-family"],
+      {
+        "ignoreValues": ["transparent", "inherit", "currentcolor", "none", "initial", "unset", "0"],
+        "disableFix": true,
+        "message": "Use a design token (var(--…)) for \"${property}\". Raw values belong in src/tokens only."
+      }
+    ],
+    "color-no-hex": true,
+    "color-named": "never",
+    "function-disallowed-list": ["rgb", "rgba", "hsl", "hsla", "hwb", "lab", "lch", "oklab", "oklch"],
+    "selector-class-pattern": "^[a-z][a-zA-Z0-9]*$"
+  },
+  "overrides": [
+    {
+      "files": ["src/tokens/**/*.css"],
+      "rules": {
+        "color-no-hex": null,
+        "function-disallowed-list": null,
+        "scale-unlimited/declaration-strict-value": null,
+        "declaration-property-value-disallowed-list": {
+          "/.*/": ["/#0{3}(0{3})?\\b/i", "/#f{3}(f{3})?\\b/i"]
+        }
+      }
+    }
+  ]
+}

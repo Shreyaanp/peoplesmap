@@ -1,0 +1,8 @@
+dist
+dev-dist
+storybook-static
+playwright-report
+test-results
+.lighthouseci
+package-lock.json
+CLAUDE.md
