@@ -3,14 +3,16 @@ name: peoplemap-motion
 description: The peoplemap motion system ("Liquid World, Crisp Glass"): tokens, easings, springs, reduce-motion fallbacks and how each hero animation is built. Load before writing or changing ANY animation, transition, gesture or map camera movement.
 ---
 
+> Frontend code lives in `web/`; run every npm command from `web/`. The Spring Boot backend in `server/` is written by hand by the user: never write backend code.
+
 # peoplemap motion
 
 Motion matters most in peoplemap. Two personalities, one token source.
 
 ## Tokens: never inline a number
 
-- TypeScript: `src/motion/tokens.ts` (`liquid`, `crisp`, `spring`, `fade`, `liquidEasing`)
-- CSS: `src/tokens/motion.css` (`--ease-liquid`, `--duration-crisp`, … and `--motion-scale`)
+- TypeScript: `web/src/motion/tokens.ts` (`liquid`, `crisp`, `spring`, `fade`, `liquidEasing`)
+- CSS: `web/src/tokens/motion.css` (`--ease-liquid`, `--duration-crisp`, … and `--motion-scale`)
 - ESLint rejects literal `duration` / `stiffness` / `damping` / `ease` inside a `transition` prop. Import a token.
 - If no token fits, add one to BOTH files. `tokens.test.ts` keeps them in sync.
 
@@ -28,7 +30,7 @@ Motion matters most in peoplemap. Two personalities, one token source.
    - React: `useMotionTransition(spring.crisp)` returns a fade under reduce-motion. `useReducedMotionPreference()` gives the boolean.
    - CSS: multiply travel distances by `var(--motion-scale)`; stop infinite animations in `@media (prefers-reduced-motion: reduce)`.
    - Map: `flyTo` becomes `jumpTo` plus a cross-fade.
-   - `e2e/reduced-motion.spec.ts` fails if any infinite animation still runs.
+   - `web/e2e/reduced-motion.spec.ts` fails if any infinite animation still runs.
 5. **60fps on a mid-range Android.** GPU for glows, at most 100–150 DOM pins (clustered), one rAF loop for the pin overlay, no layout reads inside animation frames.
 6. Load Motion in its slim form (`LazyMotion` + `domAnimation`, `m.` components) to keep the bundle small. Drag and layout features (`domMax`) load asynchronously after first paint.
 
