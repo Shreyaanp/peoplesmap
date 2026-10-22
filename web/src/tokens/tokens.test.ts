@@ -1,7 +1,7 @@
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { amber, glow, themes } from './index';
+import { amber, font, glow, themes } from './index';
 import { crisp, cubicBezier, liquid, liquidEasing } from '../motion/tokens';
 
 const css = readFileSync(resolve(import.meta.dirname, 'tokens.css'), 'utf8');
@@ -39,6 +39,15 @@ describe('tokens.css and index.ts stay in sync', () => {
       css.indexOf(":root[data-theme='dark']"),
     );
     for (const [name, hex] of Object.entries(themes.dark)) expect(cssValue(media, `color-${name}`)).toBe(hex);
+  });
+
+  it('typeface: font token, @font-face file and index.html preload agree', () => {
+    expect(cssValue(css, 'font-sans')?.replace(/\s+/g, ' ')).toBe(font.sans);
+    const fontsCss = readFileSync(resolve(import.meta.dirname, 'fonts.css'), 'utf8');
+    const html = readFileSync(resolve(import.meta.dirname, '../../index.html'), 'utf8');
+    expect(fontsCss).toContain(`url('${font.file}')`);
+    expect(html).toMatch(new RegExp(`rel="preload"\\s+href="${font.file}"`));
+    expect(existsSync(resolve(import.meta.dirname, '../../public', font.file.slice(1)))).toBe(true);
   });
 
   it('never uses pure black or white', () => {

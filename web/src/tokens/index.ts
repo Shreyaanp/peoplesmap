@@ -69,3 +69,9 @@ export const cssVar = {
   focus: 'var(--color-focus)',
   glowGradient: 'var(--glow-gradient)',
 } as const;
+
+/** Typeface. `file` is the self-hosted WOFF2 that fonts.css loads and index.html preloads. */
+export const font = {
+  sans: "'Plus Jakarta Sans', 'Plus Jakarta Sans Fallback', 'Plus Jakarta Sans Fallback Roboto', system-ui, sans-serif",
+  file: '/fonts/plus-jakarta-sans-latin-wght-5.3.0.woff2',
+} as const;

@@ -10,5 +10,12 @@
     "path": "dist/assets/*.css",
     "limit": "15 kB",
     "gzip": true
+  },
+  {
+    "name": "Typeface (Plus Jakarta Sans, latin WOFF2)",
+    "path": "dist/fonts/*.woff2",
+    "limit": "30 kB",
+    "gzip": false,
+    "brotli": false
   }
 ]

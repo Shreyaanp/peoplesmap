@@ -1,0 +1,40 @@
+/*
+ * Plus Jakarta Sans (SIL OFL 1.1, public/fonts/plus-jakarta-sans-OFL.txt), self-hosted.
+ * Latin subset only, one variable WOFF2 covering every weight. Preloaded in index.html; keep the
+ * file name in sync with `font.file` in index.ts (tokens.test.ts checks this).
+ * Source: @fontsource-variable/plus-jakarta-sans 5.3.0.
+ */
+@font-face {
+  font-family: 'Plus Jakarta Sans';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 200 800;
+  src: url('/fonts/plus-jakarta-sans-latin-wght-5.3.0.woff2') format('woff2-variations');
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329,
+    U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/*
+ * Metric-adjusted fallbacks, so text keeps its size and line positions while the real font
+ * loads (no layout shift). Values from @capsizecss/metrics (average latin character width,
+ * ascent and descent of Plus Jakarta Sans against each local font).
+ */
+@font-face {
+  font-family: 'Plus Jakarta Sans Fallback';
+  src: local('Arial'), local('ArialMT');
+  size-adjust: 104.98%;
+  ascent-override: 98.88%;
+  descent-override: 21.15%;
+  line-gap-override: 0%;
+}
+
+/* Android has no Arial; Roboto is its system sans. */
+@font-face {
+  font-family: 'Plus Jakarta Sans Fallback Roboto';
+  src: local('Roboto'), local('Roboto-Regular');
+  size-adjust: 105.21%;
+  ascent-override: 98.66%;
+  descent-override: 21.1%;
+  line-gap-override: 0%;
+}

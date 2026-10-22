@@ -30,8 +30,10 @@
     var(--glow-edge) 100%
   );
 
-  /* Typeface: placeholder system stack. Final typeface to be chosen (3–4 candidates on real screens). */
-  --font-sans: system-ui, -apple-system, 'Segoe UI', roboto, sans-serif;
+  /* Typeface: Plus Jakarta Sans (self-hosted, see fonts.css), then metric-adjusted fallbacks. */
+  --font-sans:
+    'Plus Jakarta Sans', 'Plus Jakarta Sans Fallback', 'Plus Jakarta Sans Fallback Roboto', system-ui,
+    sans-serif;
   --font-size-xs: 0.75rem;
   --font-size-sm: 0.875rem;
   --font-size-md: 1rem;
