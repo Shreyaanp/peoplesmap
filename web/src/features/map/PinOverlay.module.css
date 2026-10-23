@@ -1,0 +1,163 @@
+/*
+ * The pin overlay. The frame loop writes --morph (0 glow → 1 pins) and --face (0 tag → 1 face) on the
+ * root and a translate3d on each pin; everything else here derives from those two numbers.
+ */
+.overlay {
+  --morph: 0;
+  --face: 0;
+
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-pins);
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.overlay[data-active='false'] {
+  visibility: hidden;
+}
+
+/* The button is the 44px hit area; the visible chip inside can be smaller. */
+.pin {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.anchor {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: grid;
+  place-items: center;
+  min-width: var(--size-touch);
+  min-height: var(--size-touch);
+  opacity: var(--morph);
+  transform: translate(-50%, -50%) scale(calc(0.6 + 0.4 * var(--morph)));
+  perspective: 600px;
+}
+
+.pin:focus-visible {
+  outline: none;
+}
+
+.pin:focus-visible .anchor {
+  border-radius: var(--radius-pill);
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* Tag pin → face: a flip scrubbed by zoom, so pinching back plays it backwards. */
+.flipper {
+  display: grid;
+  transform: rotateY(calc(var(--face) * 180deg * var(--motion-scale)));
+  transform-style: preserve-3d;
+}
+
+.tagSide,
+.faceSide {
+  grid-area: 1 / 1;
+  place-self: center;
+  backface-visibility: hidden;
+}
+
+.tagSide {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  height: 30px;
+  padding: 0 var(--space-3) 0 var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-raised);
+  color: var(--color-ink);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+}
+
+.lead {
+  font-weight: var(--font-weight-bold);
+}
+
+.more {
+  display: none;
+  color: var(--color-ink-secondary);
+}
+
+.overlay[data-tags='3'] .more {
+  display: inline;
+}
+
+.faceSide {
+  width: var(--size-touch);
+  height: var(--size-touch);
+  padding: 2px;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-raised);
+  transform: rotateY(180deg);
+}
+
+.cluster {
+  display: grid;
+  place-items: center;
+  min-width: 34px;
+  height: 34px;
+  padding: 0 var(--space-2);
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-raised);
+  box-shadow: var(--shadow-raised);
+  color: var(--color-ink);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+}
+
+/* Live tags: the dot pulses. */
+.pin[data-live='true'] .dot {
+  animation: live calc(var(--duration-liquid-long) * 1.5) var(--ease-liquid) infinite alternate;
+}
+
+@keyframes live {
+  from {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  to {
+    transform: scale(1.6);
+    opacity: 0.55;
+  }
+}
+
+/* Reduce motion: no flip, a cross-fade between the sides instead; no pulse. */
+@media (prefers-reduced-motion: reduce) {
+  .tagSide {
+    opacity: calc(1 - var(--face));
+  }
+
+  .faceSide {
+    opacity: var(--face);
+    transform: none;
+  }
+
+  .pin[data-live='true'] .dot {
+    animation: none;
+  }
+}

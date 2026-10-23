@@ -1,0 +1,16 @@
+/* A soft light source inside a warm sphere: a cream highlight off-centre, then two amber steps. */
+.aura {
+  /* Built per element: the --aura-* inputs come from auraVars(id). */
+  --aura-fill: radial-gradient(
+    circle at var(--aura-x) var(--aura-y),
+    var(--glow-core) 0%,
+    var(--aura-light) 34%,
+    var(--aura-deep) 100%
+  );
+
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: var(--aura-fill);
+}

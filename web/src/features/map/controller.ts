@@ -15,6 +15,8 @@ import type { ViewBounds } from './tiles';
  * the map reports view changes. Per-frame work runs on Motion's frame loop, never in React.
  */
 export interface MapController {
+  /** For the map feature's own overlays (pin positions). Everything else goes through commands. */
+  readonly map: MapLibreMap;
   setGlowCells(cells: readonly GlowCell[], resolution: 6 | 7 | 8): void;
   flyTo(center: LatLng, zoom?: number): void;
   setTheme(theme: ThemeName): void;
@@ -104,6 +106,8 @@ export function createMapController(options: MapControllerOptions): MapControlle
   frame.render(tick, true);
 
   return {
+    map,
+
     setGlowCells(cells, resolution) {
       glows.setCells(cells, resolution);
     },

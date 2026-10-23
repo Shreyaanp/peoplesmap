@@ -1,6 +1,7 @@
 import type { CustomLayerInterface, CustomRenderMethodInput, Map as MapLibreMap } from 'maplibre-gl';
 import type { GlowCell } from '../../api/types';
 import { glow, type ThemeName } from '../../tokens';
+import { morphAt } from './zoomLevels';
 
 /**
  * Tag Weather: the amber glow clouds, drawn by our own WebGL layer.
@@ -119,10 +120,9 @@ interface Instance {
   died: number;
 }
 
-/** Glow opacity by zoom: full over the city, fading as the map morphs into tag pins. */
+/** Glow opacity by zoom: full over the city, fading out as the map morphs into tag pins. */
 export function glowOpacityAt(zoom: number): number {
-  const t = Math.min(1, Math.max(0, (zoom - 13) / 1.5));
-  return 1 - t * t * (3 - 2 * t);
+  return 1 - morphAt(zoom);
 }
 
 export function createGlowLayer(id = 'glows'): GlowLayer {
