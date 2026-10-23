@@ -34,7 +34,7 @@ npm run test:e2e
 | `web/e2e/touch-targets.spec.ts`            | Interactive elements under 44px                                                    |
 | `web/e2e/reduced-motion.spec.ts`           | Animations ignoring reduce-motion                                                  |
 | size-limit                                 | Bundle growth past budget                                                          |
-| Lighthouse CI (in GitHub Actions)          | Slow first paint, layout shift, blocking time                                      |
+| Lighthouse CI (in GitHub Actions)          | Slow first paint, layout shift (errors). Blocking time, TTI and score only warn: headless Chrome draws MapLibre's WebGL on the CPU, so the map is gated by the device frame trace instead |
 
 ## 2. Look at it
 

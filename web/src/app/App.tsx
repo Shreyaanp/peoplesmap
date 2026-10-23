@@ -3,6 +3,7 @@ import { AppProviders } from '../state/AppProviders';
 import { SearchBar } from '../ui/SearchBar';
 import { Wordmark } from '../ui/Wordmark';
 import styles from './App.module.css';
+import { useAfterFirstPaint } from './useAfterFirstPaint';
 
 const MapView = lazy(() => import('../features/map/MapView'));
 const PeopleSheet = lazy(() => import('../features/sheet/PeopleSheet'));
@@ -17,19 +18,27 @@ function MapPlaceholder() {
 }
 
 export function App() {
+  // The shell (wordmark, search) paints and responds first; MapLibre's large script waits for idle.
+  const mapAllowed = useAfterFirstPaint();
   return (
     <AppProviders>
       <div className={styles.shell}>
-        <Suspense fallback={<MapPlaceholder />}>
-          <MapView />
-        </Suspense>
+        {mapAllowed ? (
+          <Suspense fallback={<MapPlaceholder />}>
+            <MapView />
+          </Suspense>
+        ) : (
+          <MapPlaceholder />
+        )}
         <header className={styles.chrome}>
           <Wordmark />
           <SearchBar />
         </header>
-        <Suspense fallback={null}>
-          <PeopleSheet />
-        </Suspense>
+        {mapAllowed && (
+          <Suspense fallback={null}>
+            <PeopleSheet />
+          </Suspense>
+        )}
       </div>
     </AppProviders>
   );
