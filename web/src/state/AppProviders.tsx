@@ -1,10 +1,12 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { useState, type ReactNode } from 'react';
+import { SheetProvider } from './sheet';
 
 /**
  * Every Provider, composed in one deliberate order (outermost first):
  * 1. Server data (TanStack Query): everything below may fetch.
- * Later: map controller before Search, because Search calls flyTo; then Sheet.
+ * 2. Sheet: read by the sheet, the map and the search bar.
+ * Later: map controller before Search, because Search calls flyTo.
  */
 export function AppProviders({ children }: { children: ReactNode }) {
   const [queryClient] = useState(
@@ -15,5 +17,9 @@ export function AppProviders({ children }: { children: ReactNode }) {
         },
       }),
   );
-  return <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>;
+  return (
+    <QueryClientProvider client={queryClient}>
+      <SheetProvider>{children}</SheetProvider>
+    </QueryClientProvider>
+  );
 }

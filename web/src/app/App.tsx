@@ -5,6 +5,7 @@ import { Wordmark } from '../ui/Wordmark';
 import styles from './App.module.css';
 
 const MapView = lazy(() => import('../features/map/MapView'));
+const PeopleSheet = lazy(() => import('../features/sheet/PeopleSheet'));
 
 /** Until MapLibre arrives: the warm grey world with one breathing glow, so first paint is never empty. */
 function MapPlaceholder() {
@@ -26,6 +27,9 @@ export function App() {
           <Wordmark />
           <SearchBar />
         </header>
+        <Suspense fallback={null}>
+          <PeopleSheet />
+        </Suspense>
       </div>
     </AppProviders>
   );

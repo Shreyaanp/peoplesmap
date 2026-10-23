@@ -46,11 +46,14 @@ export function resetMockWorld(next?: MockWorld): void {
   world = next;
   signedInId = undefined;
   signedOut = false;
+  connections.clear();
 }
 
 // The dev session lives in memory (and survives reloads through localStorage when it is available).
 const sessionKey = 'peoplemap.mock.session';
 let signedInId: string | undefined;
+/** People the dev user connects to (in memory; a reload starts fresh). */
+const connections = new Set<string>();
 let signedOut = false;
 try {
   const saved = globalThis.localStorage?.getItem(sessionKey);
@@ -262,7 +265,30 @@ export const handlers: RequestHandler[] = [
     const person = getWorld().byId.get(String(params.personId));
     if (!person || (person.hiddenFromMap && person !== me))
       return problem(404, 'not-found', 'Person not found');
-    return HttpResponse.json(profile(person, me));
+    const card = profile(person, me);
+    return HttpResponse.json({
+      ...card,
+      connection: { ...card.connection, iConnect: connections.has(person.id) },
+    });
+  }),
+
+  // ── connections ──
+  http.put(`${base}/connections/:personId`, async ({ params }) => {
+    const failure = await devSwitches();
+    if (failure) return failure;
+    if (!currentUser()) return unauthorized();
+    const id = String(params.personId);
+    if (!getWorld().byId.has(id)) return problem(404, 'not-found', 'Person not found');
+    connections.add(id);
+    return HttpResponse.json({ iConnect: true, connectsToMe: false });
+  }),
+
+  http.delete(`${base}/connections/:personId`, async ({ params }) => {
+    const failure = await devSwitches();
+    if (failure) return failure;
+    if (!currentUser()) return unauthorized();
+    connections.delete(String(params.personId));
+    return HttpResponse.json({ iConnect: false, connectsToMe: false });
   }),
 ];
 

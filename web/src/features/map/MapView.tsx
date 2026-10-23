@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { useColorScheme } from '../../app/useColorScheme';
+import { openPerson } from '../../app/urlState';
 import { useReducedMotionPreference } from '../../motion';
 import { createMapController, type MapController, type MapView as View } from './controller';
 import styles from './MapView.module.css';
@@ -65,7 +66,9 @@ export default function MapView() {
   return (
     <>
       <div ref={containerRef} className={styles.map} role="region" aria-label="Map of people in Hyderabad" />
-      {controller && <PinOverlay map={controller.map} pins={pins} tagsShown={tagsShown} />}
+      {controller && (
+        <PinOverlay map={controller.map} pins={pins} tagsShown={tagsShown} onSelect={openPerson} />
+      )}
     </>
   );
 }

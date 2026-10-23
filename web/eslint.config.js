@@ -53,6 +53,8 @@ export default tseslint.config(
     files: ['src/state/**/*.{ts,tsx}'],
     rules: {
       'no-restricted-syntax': ['error', motionTokensOnly, contextStaysPrivate],
+      // State modules export a Provider plus its hooks by design.
+      'react-refresh/only-export-components': 'off',
     },
   },
   {

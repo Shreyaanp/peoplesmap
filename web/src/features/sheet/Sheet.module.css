@@ -1,0 +1,91 @@
+/*
+ * The sheet fills its parent and is moved with transform only (the y motion value); its own height
+ * stays fixed so nothing reflows while it moves.
+ */
+.sheet {
+  position: absolute;
+  top: var(--sheet-top-gap);
+  right: 0;
+  left: 0;
+  z-index: var(--z-sheet);
+  display: flex;
+  flex-direction: column;
+  height: calc(100% - var(--sheet-top-gap));
+  border: 1px solid var(--color-border);
+  border-bottom: 0;
+  border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+  background: var(--color-glass);
+  box-shadow: var(--shadow-sheet);
+  backdrop-filter: blur(var(--glass-blur));
+  touch-action: none;
+}
+
+/* Glass over a moving map is expensive: while the sheet moves it is a solid warm surface. */
+.sheet[data-moving='true'] {
+  background: var(--color-surface);
+  backdrop-filter: none;
+}
+
+.top {
+  flex: none;
+  padding: 0 var(--space-4) var(--space-2);
+  cursor: grab;
+}
+
+.handle {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: var(--size-touch);
+  margin-bottom: calc(var(--space-2) * -1);
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: inherit;
+}
+
+.grip {
+  width: 40px;
+  height: 5px;
+  border-radius: var(--radius-pill);
+  background: var(--color-border);
+}
+
+.handle:focus-visible {
+  outline: none;
+}
+
+.handle:focus-visible .grip {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 4px;
+}
+
+.body {
+  flex: 1;
+  min-height: 0;
+  padding: 0 var(--space-4) max(var(--space-6), env(safe-area-inset-bottom));
+  overflow: hidden;
+  overscroll-behavior: contain;
+}
+
+.body[data-scroll='true'] {
+  overflow-y: auto;
+  touch-action: pan-y;
+}
+
+/* Desktop: a floating side panel, like Google Maps on a laptop. */
+@media (width >= 900px) {
+  .sheet {
+    inset: calc(var(--space-4) + var(--size-search) + var(--space-12)) auto var(--space-4) var(--space-4);
+    width: var(--sheet-desktop-width);
+    height: auto;
+    border-bottom: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    touch-action: auto;
+  }
+
+  .top {
+    padding-top: var(--space-4);
+    cursor: default;
+  }
+}

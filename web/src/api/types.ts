@@ -26,3 +26,4 @@ export type PeopleTile = Schemas['PeopleTile'];
 export type ParsedQuery = Schemas['ParsedQuery'];
 export type SearchResult = Schemas['SearchResult'];
 export type NearestCluster = Schemas['NearestCluster'];
+export type ConnectionState = Schemas['ConnectionState'];

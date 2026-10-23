@@ -54,3 +54,12 @@
   padding: var(--space-4);
   padding-top: max(var(--space-4), env(safe-area-inset-top));
 }
+
+/* Desktop: the search sits above the side panel, top left, like Google Maps on a laptop. */
+@media (width >= 900px) {
+  .chrome {
+    max-width: none;
+    width: calc(var(--sheet-desktop-width) + var(--space-8));
+    margin: 0;
+  }
+}

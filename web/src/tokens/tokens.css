@@ -70,6 +70,8 @@
   --size-icon-sm: 20px;
   --size-icon: 24px;
   --size-icon-lg: 32px;
+  --size-avatar: 48px;
+  --size-avatar-lg: 104px;
 
   /* Z-index layers. */
   --z-map: 0;
@@ -82,6 +84,11 @@
 
   /* Frosted glass, used sparingly. */
   --glass-blur: 16px;
+
+  /* Bottom sheet: how much shows when peeking, and the gap kept above it at full height. */
+  --sheet-peek: 156px;
+  --sheet-top-gap: 84px;
+  --sheet-desktop-width: 400px;
 
   /* Light theme (default): warm grey world. */
   color-scheme: light;
@@ -97,6 +104,8 @@
   --color-ink-muted: #6f665c;
   --color-accent: var(--amber-500);
   --color-accent-ink: #1f1b17;
+  --color-accent-soft: var(--amber-100);
+  --color-accent-soft-ink: var(--amber-900);
   --color-focus: var(--amber-700);
   --shadow-sheet: 0 -8px 32px rgb(60 44 28 / 12%);
   --shadow-raised: 0 4px 16px rgb(60 44 28 / 10%);
@@ -118,6 +127,8 @@
     --color-ink-muted: #a59a8e;
     --color-accent: var(--amber-400);
     --color-accent-ink: #1f1b17;
+    --color-accent-soft: rgb(236 139 30 / 18%);
+    --color-accent-soft-ink: var(--amber-200);
     --color-focus: var(--amber-300);
     --shadow-sheet: 0 -8px 32px rgb(8 5 3 / 45%);
     --shadow-raised: 0 4px 16px rgb(8 5 3 / 40%);
@@ -138,6 +149,8 @@
   --color-ink-muted: #a59a8e;
   --color-accent: var(--amber-400);
   --color-accent-ink: #1f1b17;
+  --color-accent-soft: rgb(236 139 30 / 18%);
+  --color-accent-soft-ink: var(--amber-200);
   --color-focus: var(--amber-300);
   --shadow-sheet: 0 -8px 32px rgb(8 5 3 / 45%);
   --shadow-raised: 0 4px 16px rgb(8 5 3 / 40%);

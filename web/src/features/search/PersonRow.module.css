@@ -1,0 +1,62 @@
+.item {
+  list-style: none;
+}
+
+.row {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  width: 100%;
+  min-height: var(--size-touch);
+  padding: var(--space-3) var(--space-2);
+  border: 0;
+  border-radius: var(--radius-lg);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.row:hover {
+  background: var(--color-surface-raised);
+}
+
+.avatar {
+  position: relative;
+  flex: none;
+  width: var(--size-avatar);
+  height: var(--size-avatar);
+}
+
+/* Live tag: an amber ring. */
+.avatar[data-live='true']::after {
+  position: absolute;
+  inset: -3px;
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius-pill);
+  content: '';
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.name {
+  font-weight: var(--font-weight-bold);
+}
+
+.meta {
+  color: var(--color-ink-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-top: var(--space-1);
+}

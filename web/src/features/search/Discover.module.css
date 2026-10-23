@@ -1,0 +1,50 @@
+.header {
+  padding-top: var(--space-2);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+}
+
+.subtitle {
+  margin: var(--space-1) 0 0;
+  color: var(--color-ink-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+}
+
+/* Loading rows: the same rhythm as real rows, so nothing jumps when they arrive. */
+.placeholder {
+  height: 96px;
+  margin: var(--space-2) 0;
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-raised);
+  list-style: none;
+  opacity: 0.7;
+}
+
+.problem {
+  padding: var(--space-4) 0;
+  color: var(--color-ink-secondary);
+}
+
+.retry {
+  min-height: var(--size-touch);
+  padding: 0 var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-raised);
+  color: var(--color-ink);
+  font: inherit;
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+}

@@ -12,9 +12,15 @@
     "gzip": true
   },
   {
-    "name": "CSS",
+    "name": "Sheet chunk (Motion drag features are ~30 kB of it; loads after the map)",
+    "path": "dist/assets/PeopleSheet-*.js",
+    "limit": "50 kB",
+    "gzip": true
+  },
+  {
+    "name": "CSS (MapLibre's stylesheet is ~11 kB of it)",
     "path": "dist/assets/*.css",
-    "limit": "15 kB",
+    "limit": "18 kB",
     "gzip": true
   },
   {
