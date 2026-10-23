@@ -7,6 +7,7 @@ export const queryKeys = {
   cityGlow: ['city-glow'] as const,
   discover: ['discover'] as const,
   person: (id: string) => ['person', id] as const,
+  search: (q: string) => ['search', q] as const,
 };
 
 /** A failed API call, with the HTTP status and problem code so callers can react to the cause. */

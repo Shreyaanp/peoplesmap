@@ -1,17 +1,19 @@
 import { domMax, LazyMotion } from 'motion/react';
 import { useEffect, useRef } from 'react';
-import { useOpenPerson } from '../../app/urlState';
+import { useOpenPerson, useSearchQuery } from '../../app/urlState';
 import { useSheetActions } from '../../state/sheet';
 import { ProfileBody, ProfileHeader } from '../profile/Profile';
 import { DiscoverHeader, DiscoverList } from '../search/Discover';
+import { ResultsHeader, ResultsList } from '../search/Results';
 import { Sheet } from './Sheet';
 
 /**
- * The one sheet over the map. It shows the discovery peek by default and a profile when one is open
- * (`?person=` in the URL). Lazy-loaded with Motion's drag features, after the map.
+ * The one sheet over the map: the discovery peek by default, search results during a search (`?q=`),
+ * and a profile when one is open (`?person=`). Lazy-loaded with Motion's drag features, after the map.
  */
 export default function PeopleSheet() {
   const personId = useOpenPerson();
+  const query = useSearchQuery();
   const { setSnap } = useSheetActions();
 
   // Opening a profile lifts the sheet to half; closing it drops back to the peek.
@@ -22,13 +24,12 @@ export default function PeopleSheet() {
     setSnap(personId ? 'half' : 'peek');
   }, [personId, setSnap]);
 
+  const header = personId ? <ProfileHeader /> : query ? <ResultsHeader /> : <DiscoverHeader />;
+
   return (
     <LazyMotion features={domMax} strict>
-      <Sheet
-        label={personId ? 'Profile' : 'People around you'}
-        header={personId ? <ProfileHeader /> : <DiscoverHeader />}
-      >
-        {personId ? <ProfileBody key={personId} id={personId} /> : <DiscoverList />}
+      <Sheet label={personId ? 'Profile' : query ? 'Search results' : 'People around you'} header={header}>
+        {personId ? <ProfileBody key={personId} id={personId} /> : query ? <ResultsList /> : <DiscoverList />}
       </Sheet>
     </LazyMotion>
   );

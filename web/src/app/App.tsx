@@ -5,6 +5,7 @@ import { SearchBar } from '../ui/SearchBar';
 import { Wordmark } from '../ui/Wordmark';
 import styles from './App.module.css';
 import { MapPlaceholder } from './MapPlaceholder';
+import { clearSearch, search, useSearchQuery } from './urlState';
 import { useAfterFirstPaint } from './useAfterFirstPaint';
 
 const MapView = lazy(() => import('../features/map/MapView'));
@@ -44,6 +45,7 @@ function Session() {
 function SignedIn() {
   // The shell (wordmark, search) paints and responds first; MapLibre's large script waits for idle.
   const mapAllowed = useAfterFirstPaint();
+  const query = useSearchQuery();
   return (
     <div className={styles.shell}>
       {mapAllowed ? (
@@ -60,7 +62,7 @@ function SignedIn() {
             <AccountMenu />
           </Suspense>
         </div>
-        <SearchBar />
+        <SearchBar query={query} onSubmit={search} onClear={clearSearch} />
       </header>
       {mapAllowed && (
         <Suspense fallback={null}>

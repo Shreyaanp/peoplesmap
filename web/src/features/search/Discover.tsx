@@ -2,6 +2,7 @@ import { useDiscover, useMe, usePrefetchProfile } from '../../api/queries';
 import { openPerson } from '../../app/urlState';
 import styles from './Discover.module.css';
 import { PersonRow } from './PersonRow';
+import { warm } from './warm';
 
 /** The sheet's default peek, before any search: people around you with different interests. */
 export function DiscoverHeader() {
@@ -47,11 +48,4 @@ export function DiscoverList() {
       ))}
     </ul>
   );
-}
-
-/** Press-down on a row starts loading that profile before the tap even ends. */
-function warm(target: EventTarget, prefetch: (id: string) => void) {
-  const row = target instanceof Element ? target.closest('[data-person-id]') : null;
-  const id = row?.getAttribute('data-person-id');
-  if (id) prefetch(id);
 }

@@ -88,11 +88,31 @@ export function itemsIn(
   });
 }
 
+/** A pin's lead tag: with a search, the tag it matched; otherwise its top tag. */
+export function leadTag(pin: PersonPin): string | undefined {
+  const matched = pin.matched?.[0];
+  if (!matched) return pin.topTags[0]?.display;
+  return pin.topTags.find((tag) => tag.slug === matched)?.display ?? matched;
+}
+
 /** Where a newly shown item springs out from, and its place in the queue. */
 export interface SpringOrigin {
   lng: number;
   lat: number;
   order: number;
+}
+
+/**
+ * Search Bloom for pins: when a search filters the map, every pin pops in where it stands, from the
+ * centre of the view outwards (items arrive sorted by distance from the centre), a few at a time.
+ */
+export function bloomOrigins(items: readonly MapItem[]): Map<string, SpringOrigin> {
+  return new Map(
+    items.map((item, i) => [
+      item.key,
+      { lng: item.lng, lat: item.lat, order: Math.min(Math.floor(i / 3), maxOrder) },
+    ]),
+  );
 }
 
 /**

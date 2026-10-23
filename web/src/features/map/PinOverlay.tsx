@@ -11,7 +11,15 @@ import {
 } from 'react';
 import type { LatLng, PersonPin } from '../../api/types';
 import { Aura } from '../../ui/Aura';
-import { createPeopleIndex, itemsIn, type MapItem, springOrigins, type SpringOrigin } from './clusters';
+import {
+  bloomOrigins,
+  createPeopleIndex,
+  itemsIn,
+  leadTag,
+  type MapItem,
+  springOrigins,
+  type SpringOrigin,
+} from './clusters';
 import styles from './PinOverlay.module.css';
 import { faceAt, morphAt } from './zoomLevels';
 
@@ -28,6 +36,8 @@ interface PinOverlayProps {
   onSelect?: (personId: string) => void;
   /** Tapping a group glides in until it splits. */
   onZoomInto: (center: LatLng, zoom: number) => void;
+  /** The search filter (matched slugs). When it changes, the next set of pins blooms in. */
+  filterKey: string;
 }
 
 interface PinNode {
@@ -38,8 +48,9 @@ interface PinNode {
   origin?: SpringOrigin | undefined;
 }
 
+/** Lead tag first (the one a search matched), then the rest of the top tags. */
 function personLabel(pin: PersonPin): string {
-  const tags = pin.topTags.map((t) => t.display).join(', ');
+  const tags = [...new Set([leadTag(pin), ...pin.topTags.map((t) => t.display)])].filter(Boolean).join(', ');
   return pin.liveTag ? `Person into ${tags}, live now: ${pin.liveTag.display}` : `Person into ${tags}`;
 }
 
@@ -62,7 +73,7 @@ function groupScale(count: number): number {
  * by --face). Zooming in splits it, and whatever came out springs from the group's centre to its
  * own place, one after another.
  */
-export function PinOverlay({ map, pins, tagsShown, onSelect, onZoomInto }: PinOverlayProps) {
+export function PinOverlay({ map, pins, tagsShown, onSelect, onZoomInto, filterKey }: PinOverlayProps) {
   const rootRef = useRef<HTMLDivElement>(null);
   const nodes = useRef(new Map<string, PinNode>());
   const dirty = useRef(true);
@@ -72,10 +83,20 @@ export function PinOverlay({ map, pins, tagsShown, onSelect, onZoomInto }: PinOv
 
   const index = useMemo(() => createPeopleIndex(pins), [pins]);
 
+  // The filter the current pins were loaded for. Pins arrive after the filter changes (their tiles
+  // are fetched for it), so the first new set after a change is the one that blooms.
+  const filter = useRef(filterKey);
+  const bloomedFor = useRef(filterKey);
+  useEffect(() => {
+    filter.current = filterKey;
+  }, [filterKey]);
+
   // Which pins exist: recomputed when a move settles or the zoom crosses a whole level.
   useEffect(() => {
     let level = -1;
     let shown: MapItem[] = [];
+    const bloom = bloomedFor.current !== filter.current;
+    bloomedFor.current = filter.current;
     const leaves = (clusterId: number, limit: number) =>
       index.getLeaves(clusterId, limit).map((leaf) => leaf.properties.pin.id);
     const update = () => {
@@ -98,7 +119,9 @@ export function PinOverlay({ map, pins, tagsShown, onSelect, onZoomInto }: PinOv
           Math.hypot(b2.lng - center.lng, b2.lat - center.lat),
       );
       const kept = next.slice(0, maxPins);
-      if (previousLevel !== -1 && previousLevel !== level) {
+      if (previousLevel === -1 && bloom) {
+        origins.current = bloomOrigins(kept);
+      } else if (previousLevel !== -1 && previousLevel !== level) {
         origins.current = springOrigins(shown, kept, leaves, level > previousLevel);
       }
       shown = kept;
@@ -252,12 +275,15 @@ export function PinOverlay({ map, pins, tagsShown, onSelect, onZoomInto }: PinOv
                 <span className={styles.flipper}>
                   <span className={styles.tagSide}>
                     <span className={styles.dot} />
-                    <span className={styles.lead}>#{item.pin.topTags[0]?.display}</span>
-                    {item.pin.topTags.slice(1).map((tag) => (
-                      <span key={tag.slug} className={styles.more}>
-                        #{tag.display}
-                      </span>
-                    ))}
+                    <span className={styles.lead}>#{leadTag(item.pin)}</span>
+                    {item.pin.topTags
+                      .filter((tag) => tag.display !== leadTag(item.pin))
+                      .slice(0, 2)
+                      .map((tag) => (
+                        <span key={tag.slug} className={styles.more}>
+                          #{tag.display}
+                        </span>
+                      ))}
                   </span>
                   <span className={styles.faceSide}>
                     <Aura seed={item.pin.id} />
