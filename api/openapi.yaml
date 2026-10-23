@@ -1329,13 +1329,18 @@ components:
     # ─── map ───
     GlowCell:
       type: object
-      required: [cell, count]
+      required: [cell, center, count]
       properties:
         cell: { $ref: '#/components/schemas/H3Cell' }
+        center:
+          $ref: '#/components/schemas/LatLng'
+          description: The cell's centre, so the client needs no H3 library.
         count:
           type: integer
-          minimum: 5
-          description: People (or matching people) in the cell. Drives brightness.
+          minimum: 0
+          description: |
+            People (or matching people) in the cell. Drives brightness. Privacy: a cell is sent only
+            when `count + relatedCount` is at least about 5; smaller cells merge into their parent.
         relatedCount:
           type: integer
           minimum: 0

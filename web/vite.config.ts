@@ -1,10 +1,13 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
+import { msw } from 'msw/vite';
 
 export default defineConfig({
   plugins: [
     react(),
+    // Serves the mock API's service worker in development only; nothing ships in the build.
+    { ...msw({ mode: 'worker-only' }), apply: 'serve' },
     VitePWA({
       registerType: 'autoUpdate',
       // Precache the self-hosted typeface too, so repeat visits never wait for it.
