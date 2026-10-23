@@ -34,14 +34,15 @@ Full product doc (source of truth): https://claude.ai/artifact/YLH17vbMtW6EhZg1v
 | Mid (area) | Tag pins: person as floating top tags | Tag pin flips to reveal face |
 | Close (street) | Photo bubbles | Tap lifts bubble into profile sheet |
 
-## Onboarding (sign-up only when joining the map)
-1. Arrive: living amber map, "Find your people." No login wall.
-2. Explore freely; profiles visible but blurred.
-3. Describe yourself in one text box.
-4. Tag Birth: words lift off and click into chips.
-5. Join: "Put yourself on the map?" One-tap sign-up (Google or phone — to be confirmed) + set location (exact or neighbourhood).
-6. Your glow appears; nearby matching glows brighten.
-7. First results already showing.
+## Onboarding (sign in and create a profile before seeing the map)
+1. Arrive: the city's coarse amber glow (counts only, no people), "Find your people." One button: continue with Google.
+2. Describe yourself in one text box.
+3. Tag Birth: words lift off and click into chips.
+4. Name, optional photo (no photo → a generated aura avatar), set location (exact or neighbourhood).
+5. "Put yourself on the map": your glow appears; nearby matching glows brighten.
+6. The sheet peeks people around you with different interests. Searching filters the same map.
+
+Age limit: deferred.
 
 ## Profile card
 Photo-first bottom sheet grown from the map bubble. Name, area, live-tag dot, tag chips (shared tags glow amber, level labels), Connect + Chat buttons. Swipe down to shrink back into the bubble.
@@ -50,7 +51,12 @@ Photo-first bottom sheet grown from the map bubble. Name, area, live-tag dot, ta
 - Connect is **one-way** (like an Instagram follow).
 - Messages from people you've connected to → **Chats** (main DMs).
 - Messages from anyone else → **Glows** folder. Connecting back or replying moves the thread to Chats.
-- Anti-spam / safety: deferred.
+- Glows show message previews (like WhatsApp message requests) with Accept / Ignore. Ignore is silent and undoable.
+- Both folders notify; each can be turned off in settings.
+- Safety at launch: report, block, and "hide me from the map". Anti-spam: deferred.
+
+## API contract
+`api/openapi.yaml` (REST) and `api/realtime.md` (STOMP). Every endpoint is defined there first.
 
 ## Visual theme: "Grey World, Colorful People"
 - Warm grey base map (light) / charcoal with brown undertone (dark). Both modes designed fully.
@@ -66,5 +72,6 @@ Photo-first bottom sheet grown from the map bubble. Name, area, live-tag dot, ta
 - Rules: nothing moves without a reason; every animation interruptible; respect reduce-motion (fall back to fades).
 
 ## Deferred
-- Anti-spam and safety (blocking, reporting, fake profiles)
+- Anti-spam and fake-profile detection
+- Age limit
 - Category colours for combo search (experimental)

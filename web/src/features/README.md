@@ -1,6 +1,6 @@
 # Features
 
-One folder per feature. Each owns its components, hooks, store slice and CSS Modules.
+One folder per feature. Each owns its components, hooks, state and CSS Modules.
 
 | Folder       | Owns                                                                 |
 | ------------ | -------------------------------------------------------------------- |

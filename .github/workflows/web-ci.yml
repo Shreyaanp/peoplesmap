@@ -33,6 +33,7 @@ jobs:
           cache: npm
           cache-dependency-path: web/package-lock.json
       - run: npm ci
+      - run: npx -y @redocly/cli@2.69.0 lint ../api/openapi.yaml --config ../api/redocly.yaml
       - run: npm run typecheck
       - run: npm run lint
       - run: npm run lint:css
