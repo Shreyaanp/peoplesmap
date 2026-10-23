@@ -76,7 +76,13 @@ export default function MapView() {
     <>
       <div ref={containerRef} className={styles.map} role="region" aria-label="Map of people in Hyderabad" />
       {controller && (
-        <PinOverlay map={controller.map} pins={pins} tagsShown={tagsShown} onSelect={openPerson} />
+        <PinOverlay
+          map={controller.map}
+          pins={pins}
+          tagsShown={tagsShown}
+          onSelect={openPerson}
+          onZoomInto={controller.zoomInto}
+        />
       )}
     </>
   );

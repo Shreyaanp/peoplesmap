@@ -19,6 +19,8 @@ export interface MapController {
   readonly map: MapLibreMap;
   setGlowCells(cells: readonly GlowCell[], resolution: 6 | 7 | 8): void;
   flyTo(center: LatLng, zoom?: number): void;
+  /** A short glide in (tapping a group): no arc, just the liquid ease. */
+  zoomInto(center: LatLng, zoom: number): void;
   setTheme(theme: ThemeName): void;
   setReducedMotion(reduced: boolean): void;
   /** Called after every settled move (moveend), and once when the map loads. */
@@ -123,6 +125,21 @@ export function createMapController(options: MapControllerOptions): MapControlle
         return;
       }
       map.flyTo({ ...target, duration: liquid.duration.long * 1000, easing: liquidEasing, essential: false });
+    },
+
+    zoomInto(center, zoom) {
+      map.stop();
+      const target = { center: [center.lng, center.lat] as [number, number], zoom };
+      if (reducedMotion) {
+        map.jumpTo(target);
+        return;
+      }
+      map.easeTo({
+        ...target,
+        duration: liquid.duration.base * 1000,
+        easing: liquidEasing,
+        essential: false,
+      });
     },
 
     setTheme(next) {

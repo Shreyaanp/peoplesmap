@@ -1,18 +1,24 @@
 import type { Map as MapLibreMap } from 'maplibre-gl';
 import { cancelFrame, frame } from 'motion';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import Supercluster from 'supercluster';
-import type { PersonPin } from '../../api/types';
+import {
+  type AnimationEvent,
+  type CSSProperties,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import type { LatLng, PersonPin } from '../../api/types';
 import { Aura } from '../../ui/Aura';
+import { createPeopleIndex, itemsIn, type MapItem, springOrigins, type SpringOrigin } from './clusters';
 import styles from './PinOverlay.module.css';
 import { faceAt, morphAt } from './zoomLevels';
 
 /** Never more DOM pins than this (the 60fps budget on a mid-range phone). */
 const maxPins = 150;
 
-type Item =
-  | { key: string; kind: 'person'; lng: number; lat: number; pin: PersonPin }
-  | { key: string; kind: 'cluster'; lng: number; lat: number; count: number; clusterId: number };
+type Group = Extract<MapItem, { kind: 'cluster' }>;
 
 interface PinOverlayProps {
   map: MapLibreMap;
@@ -20,6 +26,16 @@ interface PinOverlayProps {
   /** 1 or 3 tags on a pin (the open motion-lab question; `?pinTags=3` to compare). */
   tagsShown: 1 | 3;
   onSelect?: (personId: string) => void;
+  /** Tapping a group glides in until it splits. */
+  onZoomInto: (center: LatLng, zoom: number) => void;
+}
+
+interface PinNode {
+  el: HTMLElement;
+  lng: number;
+  lat: number;
+  /** Set when the pin has just come out of a group: where from, and its place in the queue. */
+  origin?: SpringOrigin | undefined;
 }
 
 function personLabel(pin: PersonPin): string {
@@ -27,59 +43,66 @@ function personLabel(pin: PersonPin): string {
   return pin.liveTag ? `Person into ${tags}, live now: ${pin.liveTag.display}` : `Person into ${tags}`;
 }
 
+function groupLabel(group: Group): string {
+  const into = group.topTag ? `, many into #${group.topTag}` : '';
+  return `${group.count} people here${into}. Zoom in`;
+}
+
+/** The glow behind a group grows with the headcount, gently: 2 people 1.2×, 8 people 1.5×, at most 1.8×. */
+function groupScale(count: number): number {
+  return Math.min(1.8, 1 + Math.log2(count) / 6);
+}
+
 /**
  * People as DOM pins over the map. React decides which pins exist (clusters recomputed when a move
  * settles or the zoom crosses a whole level); one frame loop owns where they are, writing transforms
  * and the --morph / --face progress. No React render happens while the map moves.
+ *
+ * A group is a glow puck with its headcount at tag zoom and a stack of faces up close (cross-faded
+ * by --face). Zooming in splits it, and whatever came out springs from the group's centre to its
+ * own place, one after another.
  */
-export function PinOverlay({ map, pins, tagsShown, onSelect }: PinOverlayProps) {
+export function PinOverlay({ map, pins, tagsShown, onSelect, onZoomInto }: PinOverlayProps) {
   const rootRef = useRef<HTMLDivElement>(null);
-  const nodes = useRef(new Map<string, { el: HTMLElement; lng: number; lat: number }>());
+  const nodes = useRef(new Map<string, PinNode>());
   const dirty = useRef(true);
-  const [items, setItems] = useState<Item[]>([]);
+  /** Spring origins for pins about to mount, handed to each node as it registers. */
+  const origins = useRef(new Map<string, SpringOrigin>());
+  const [items, setItems] = useState<MapItem[]>([]);
 
-  const index = useMemo(() => {
-    const cluster = new Supercluster<{ pin: PersonPin }>({ radius: 56, maxZoom: 17 });
-    cluster.load(
-      pins.map((pin) => ({
-        type: 'Feature',
-        properties: { pin },
-        geometry: { type: 'Point', coordinates: [pin.point.lng, pin.point.lat] },
-      })),
-    );
-    return cluster;
-  }, [pins]);
+  const index = useMemo(() => createPeopleIndex(pins), [pins]);
 
   // Which pins exist: recomputed when a move settles or the zoom crosses a whole level.
   useEffect(() => {
     let level = -1;
+    let shown: MapItem[] = [];
+    const leaves = (clusterId: number, limit: number) =>
+      index.getLeaves(clusterId, limit).map((leaf) => leaf.properties.pin.id);
     const update = () => {
       const zoom = map.getZoom();
+      const previousLevel = level;
       level = Math.floor(zoom);
       const b = map.getBounds();
       // Half a screen of margin, so short pans never reveal an empty edge.
       const padX = (b.getEast() - b.getWest()) / 2;
       const padY = (b.getNorth() - b.getSouth()) / 2;
       const center = map.getCenter();
-      const features = index.getClusters(
+      const next = itemsIn(
+        index,
         [b.getWest() - padX, b.getSouth() - padY, b.getEast() + padX, b.getNorth() + padY],
         level,
       );
-      const next: Item[] = features.map((f) => {
-        const [lng = 0, lat = 0] = f.geometry.coordinates;
-        if ('cluster' in f.properties && f.properties.cluster) {
-          const { cluster_id: clusterId, point_count: count } = f.properties;
-          return { key: `c${clusterId}`, kind: 'cluster', lng, lat, count, clusterId };
-        }
-        const { pin } = f.properties as { pin: PersonPin };
-        return { key: pin.id, kind: 'person', lng, lat, pin };
-      });
       next.sort(
         (a, b2) =>
           Math.hypot(a.lng - center.lng, a.lat - center.lat) -
           Math.hypot(b2.lng - center.lng, b2.lat - center.lat),
       );
-      setItems(next.slice(0, maxPins));
+      const kept = next.slice(0, maxPins);
+      if (previousLevel !== -1 && previousLevel !== level) {
+        origins.current = springOrigins(shown, kept, leaves, level > previousLevel);
+      }
+      shown = kept;
+      setItems(kept);
     };
     const onZoom = () => {
       if (Math.floor(map.getZoom()) !== level) update();
@@ -98,6 +121,7 @@ export function PinOverlay({ map, pins, tagsShown, onSelect }: PinOverlayProps) 
     const root = rootRef.current;
     if (!root) return;
     const positions = new Map<string, { x: number; y: number }>();
+    const springs = new Map<HTMLElement, { dx: number; dy: number; order: number }>();
     let zoom = map.getZoom();
     let changed = false;
     const markDirty = () => {
@@ -110,6 +134,11 @@ export function PinOverlay({ map, pins, tagsShown, onSelect }: PinOverlayProps) 
       for (const [key, node] of nodes.current) {
         const p = map.project([node.lng, node.lat]);
         positions.set(key, { x: p.x, y: p.y });
+        if (node.origin) {
+          const from = map.project([node.origin.lng, node.origin.lat]);
+          springs.set(node.el, { dx: from.x - p.x, dy: from.y - p.y, order: node.origin.order });
+          node.origin = undefined;
+        }
       }
       changed = true;
     };
@@ -124,6 +153,14 @@ export function PinOverlay({ map, pins, tagsShown, onSelect }: PinOverlayProps) 
         const p = positions.get(key);
         if (p) node.el.style.transform = `translate3d(${p.x.toFixed(1)}px, ${p.y.toFixed(1)}px, 0)`;
       }
+      // Pins fresh out of a group: start the CSS spring from the group's centre (see .spring).
+      for (const [el, { dx, dy, order }] of springs) {
+        el.style.setProperty('--from-x', `${dx.toFixed(1)}px`);
+        el.style.setProperty('--from-y', `${dy.toFixed(1)}px`);
+        el.style.setProperty('--order', String(order));
+        el.dataset.spring = 'true';
+      }
+      springs.clear();
     };
     map.on('move', markDirty);
     map.on('resize', markDirty);
@@ -143,9 +180,11 @@ export function PinOverlay({ map, pins, tagsShown, onSelect }: PinOverlayProps) 
   }, [items]);
 
   const register = useCallback(
-    (item: Item) => (el: HTMLElement | null) => {
+    (item: MapItem) => (el: HTMLElement | null) => {
       if (!el) return;
-      nodes.current.set(item.key, { el, lng: item.lng, lat: item.lat });
+      const origin = origins.current.get(item.key);
+      origins.current.delete(item.key);
+      nodes.current.set(item.key, { el, lng: item.lng, lat: item.lat, origin });
       dirty.current = true;
       return () => {
         nodes.current.delete(item.key);
@@ -154,9 +193,14 @@ export function PinOverlay({ map, pins, tagsShown, onSelect }: PinOverlayProps) 
     [],
   );
 
-  const zoomIntoCluster = (item: Extract<Item, { kind: 'cluster' }>) => {
+  /** The spring-out plays once; dropping the attribute keeps a later restyle from replaying it. */
+  const endSpring = (event: AnimationEvent<HTMLElement>) => {
+    if (event.animationName.includes('spring-out')) delete event.currentTarget.dataset.spring;
+  };
+
+  const zoomIntoCluster = (item: Group) => {
     const zoom = Math.min(index.getClusterExpansionZoom(item.clusterId), 18);
-    map.easeTo({ center: [item.lng, item.lat], zoom });
+    onZoomInto({ lng: item.lng, lat: item.lat }, zoom);
   };
 
   return (
@@ -168,11 +212,28 @@ export function PinOverlay({ map, pins, tagsShown, onSelect }: PinOverlayProps) 
             ref={register(item)}
             type="button"
             className={styles.pin}
-            aria-label={`${item.count} people here. Zoom in`}
+            aria-label={groupLabel(item)}
             onClick={() => zoomIntoCluster(item)}
+            onAnimationEnd={endSpring}
           >
-            <span className={styles.anchor}>
-              <span className={styles.cluster}>{item.count}</span>
+            <span className={styles.spring}>
+              <span className={styles.anchor}>
+                <span
+                  className={styles.group}
+                  style={{ '--group-scale': groupScale(item.count).toFixed(2) } as CSSProperties}
+                >
+                  <span className={styles.puck}>
+                    <span className={styles.halo} />
+                    <span className={styles.count}>{item.count}</span>
+                  </span>
+                  <span className={styles.stack}>
+                    {item.sample.map((id) => (
+                      <Aura key={id} seed={id} className={styles.stackFace} />
+                    ))}
+                    <span className={styles.stackCount}>{item.count}</span>
+                  </span>
+                </span>
+              </span>
             </span>
           </button>
         ) : (
@@ -184,20 +245,23 @@ export function PinOverlay({ map, pins, tagsShown, onSelect }: PinOverlayProps) 
             aria-label={personLabel(item.pin)}
             data-live={item.pin.liveTag ? 'true' : undefined}
             onClick={() => onSelect?.(item.pin.id)}
+            onAnimationEnd={endSpring}
           >
-            <span className={styles.anchor}>
-              <span className={styles.flipper}>
-                <span className={styles.tagSide}>
-                  <span className={styles.dot} />
-                  <span className={styles.lead}>#{item.pin.topTags[0]?.display}</span>
-                  {item.pin.topTags.slice(1).map((tag) => (
-                    <span key={tag.slug} className={styles.more}>
-                      #{tag.display}
-                    </span>
-                  ))}
-                </span>
-                <span className={styles.faceSide}>
-                  <Aura seed={item.pin.id} />
+            <span className={styles.spring}>
+              <span className={styles.anchor}>
+                <span className={styles.flipper}>
+                  <span className={styles.tagSide}>
+                    <span className={styles.dot} />
+                    <span className={styles.lead}>#{item.pin.topTags[0]?.display}</span>
+                    {item.pin.topTags.slice(1).map((tag) => (
+                      <span key={tag.slug} className={styles.more}>
+                        #{tag.display}
+                      </span>
+                    ))}
+                  </span>
+                  <span className={styles.faceSide}>
+                    <Aura seed={item.pin.id} />
+                  </span>
                 </span>
               </span>
             </span>

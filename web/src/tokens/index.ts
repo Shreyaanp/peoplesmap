@@ -107,6 +107,7 @@ export const cssVar = {
   accentInk: 'var(--color-accent-ink)',
   focus: 'var(--color-focus)',
   glowGradient: 'var(--glow-gradient)',
+  glowHalo: 'var(--glow-halo)',
 } as const;
 
 /** Typeface. `file` is the self-hosted WOFF2 that fonts.css loads and index.html preloads. */

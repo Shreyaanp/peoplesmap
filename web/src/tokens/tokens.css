@@ -30,6 +30,15 @@
     var(--glow-edge) 100%
   );
 
+  /* The same ramp fading out exactly at the element's edge, for halos that must never show a rim. */
+  --glow-halo: radial-gradient(
+    closest-side,
+    var(--glow-core) 0%,
+    var(--glow-honey) 24%,
+    rgb(217 112 15 / 40%) 55%,
+    var(--glow-edge) 100%
+  );
+
   /* Typeface: Plus Jakarta Sans (self-hosted, see fonts.css), then metric-adjusted fallbacks. */
   --font-sans:
     'Plus Jakarta Sans', 'Plus Jakarta Sans Fallback', 'Plus Jakarta Sans Fallback Roboto', system-ui,
