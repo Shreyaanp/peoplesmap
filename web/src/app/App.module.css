@@ -4,45 +4,6 @@
   overflow: hidden;
 }
 
-.map {
-  position: absolute;
-  inset: 0;
-  z-index: var(--z-map);
-  background: var(--color-map);
-}
-
-/* Breathing glow: liquid, slow. Only transform and opacity move. */
-.glow {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 360px;
-  height: 360px;
-  margin: -180px 0 0 -180px;
-  border-radius: var(--radius-pill);
-  background: var(--glow-gradient);
-  opacity: 0.85;
-  animation: breathe calc(var(--duration-liquid-long) * 4) var(--ease-liquid) infinite alternate;
-}
-
-@keyframes breathe {
-  from {
-    transform: scale(0.92);
-    opacity: 0.7;
-  }
-
-  to {
-    transform: scale(1.06);
-    opacity: 0.95;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .glow {
-    animation: none;
-  }
-}
-
 .chrome {
   position: relative;
   z-index: var(--z-chrome);
@@ -62,4 +23,11 @@
     width: calc(var(--sheet-desktop-width) + var(--space-8));
     margin: 0;
   }
+}
+
+.brandRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: var(--size-touch);
 }

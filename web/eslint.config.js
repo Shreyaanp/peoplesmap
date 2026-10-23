@@ -33,7 +33,17 @@ const contextStaysPrivate = {
 };
 
 export default tseslint.config(
-  { ignores: ['dist', 'storybook-static', 'playwright-report', 'test-results', '.lighthouseci', 'dev-dist'] },
+  {
+    ignores: [
+      'dist',
+      'dist-e2e',
+      'storybook-static',
+      'playwright-report',
+      'test-results',
+      '.lighthouseci',
+      'dev-dist',
+    ],
+  },
   {
     extends: [js.configs.recommended, ...tseslint.configs.strict],
     files: ['**/*.{ts,tsx}'],

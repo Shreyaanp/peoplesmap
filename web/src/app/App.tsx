@@ -1,45 +1,65 @@
 import { lazy, Suspense } from 'react';
+import { useMe } from '../api/me';
 import { AppProviders } from '../state/AppProviders';
 import { SearchBar } from '../ui/SearchBar';
 import { Wordmark } from '../ui/Wordmark';
 import styles from './App.module.css';
+import { MapPlaceholder } from './MapPlaceholder';
 import { useAfterFirstPaint } from './useAfterFirstPaint';
 
 const MapView = lazy(() => import('../features/map/MapView'));
 const PeopleSheet = lazy(() => import('../features/sheet/PeopleSheet'));
+const SignIn = lazy(() => import('../features/onboarding/SignIn'));
+// Sign-out needs TanStack's mutation code; keep it out of the first-paint bundle.
+const AccountMenu = lazy(() => import('./AccountMenu'));
 
-/** Until MapLibre arrives: the warm grey world with one breathing glow, so first paint is never empty. */
-function MapPlaceholder() {
+export function App() {
   return (
-    <div className={styles.map} aria-hidden="true">
-      <div className={styles.glow} data-testid="glow" />
-    </div>
+    <AppProviders>
+      <Session />
+    </AppProviders>
   );
 }
 
-export function App() {
+/** Sign in and have a profile before the map: nobody sees people while signed out. */
+function Session() {
+  const me = useMe();
+  if (me.isPending) return <MapPlaceholder />;
+  if (me.data) return <SignedIn />;
+  return (
+    <Suspense fallback={<MapPlaceholder />}>
+      <SignIn unreachable={me.isError} onRetry={() => void me.refetch()} />
+    </Suspense>
+  );
+}
+
+// TODO(onboarding): a `status: onboarding` person goes through describe-yourself and Tag Birth first.
+function SignedIn() {
   // The shell (wordmark, search) paints and responds first; MapLibre's large script waits for idle.
   const mapAllowed = useAfterFirstPaint();
   return (
-    <AppProviders>
-      <div className={styles.shell}>
-        {mapAllowed ? (
-          <Suspense fallback={<MapPlaceholder />}>
-            <MapView />
-          </Suspense>
-        ) : (
-          <MapPlaceholder />
-        )}
-        <header className={styles.chrome}>
+    <div className={styles.shell}>
+      {mapAllowed ? (
+        <Suspense fallback={<MapPlaceholder />}>
+          <MapView />
+        </Suspense>
+      ) : (
+        <MapPlaceholder />
+      )}
+      <header className={styles.chrome}>
+        <div className={styles.brandRow}>
           <Wordmark />
-          <SearchBar />
-        </header>
-        {mapAllowed && (
           <Suspense fallback={null}>
-            <PeopleSheet />
+            <AccountMenu />
           </Suspense>
-        )}
-      </div>
-    </AppProviders>
+        </div>
+        <SearchBar />
+      </header>
+      {mapAllowed && (
+        <Suspense fallback={null}>
+          <PeopleSheet />
+        </Suspense>
+      )}
+    </div>
   );
 }

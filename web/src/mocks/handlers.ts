@@ -45,35 +45,31 @@ function getWorld(): MockWorld {
 export function resetMockWorld(next?: MockWorld): void {
   world = next;
   signedInId = undefined;
-  signedOut = false;
   connections.clear();
 }
 
-// The dev session lives in memory (and survives reloads through localStorage when it is available).
+// Everyone starts signed out, like the real app. The dev session lives in memory and survives
+// reloads through localStorage when it is available.
 const sessionKey = 'peoplemap.mock.session';
 let signedInId: string | undefined;
 /** People the dev user connects to (in memory; a reload starts fresh). */
 const connections = new Set<string>();
-let signedOut = false;
 try {
-  const saved = globalThis.localStorage?.getItem(sessionKey);
-  if (saved === 'out') signedOut = true;
-  else if (saved) signedInId = saved;
+  signedInId = globalThis.localStorage?.getItem(sessionKey) ?? undefined;
 } catch {
   // Storage blocked: the session just resets on reload.
 }
-function saveSession(value: string): void {
+function saveSession(value: string | undefined): void {
   try {
-    globalThis.localStorage?.setItem(sessionKey, value);
+    if (value) globalThis.localStorage?.setItem(sessionKey, value);
+    else globalThis.localStorage?.removeItem(sessionKey);
   } catch {
     // Ignore.
   }
 }
 
 function currentUser() {
-  if (signedOut) return undefined;
-  const w = getWorld();
-  return (signedInId && w.byId.get(signedInId)) || w.me;
+  return signedInId ? getWorld().byId.get(signedInId) : undefined;
 }
 
 function problem(status: number, code: Problem['code'], title: string, detail?: string) {
@@ -126,27 +122,30 @@ const unauthorized = () => problem(401, 'unauthorized', 'Sign in to continue');
 
 export const handlers: RequestHandler[] = [
   // ── auth ──
+  // Any credential is accepted and signs in as the dev user (Riya in Gachibowli).
   http.post(`${base}/auth/google`, async () => {
-    signedOut = false;
+    const failure = await devSwitches();
+    if (failure) return failure;
     signedInId = getWorld().me.id;
     saveSession(signedInId);
     return HttpResponse.json(toMe(getWorld().me));
   }),
 
   http.post(`${base}/auth/dev`, async ({ request }) => {
+    const failure = await devSwitches();
+    if (failure) return failure;
     const { personId } = (await request.json()) as { personId: string };
     const person = getWorld().byId.get(personId);
     if (!person) return problem(404, 'not-found', 'No such seeded person');
-    signedOut = false;
     signedInId = person.id;
     saveSession(person.id);
     return HttpResponse.json(toMe(person));
   }),
 
   http.post(`${base}/auth/logout`, () => {
-    signedOut = true;
+    if (!currentUser()) return unauthorized();
     signedInId = undefined;
-    saveSession('out');
+    saveSession(undefined);
     return new HttpResponse(null, { status: 204 });
   }),
 

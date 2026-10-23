@@ -5,14 +5,15 @@ import './tokens/tokens.css';
 import './tokens/motion.css';
 import './app/global.css';
 import { App } from './app/App';
+import { mocksEnabled } from './app/config';
 
 const root = document.getElementById('root');
 if (!root) throw new Error('Missing #root element');
 
-/** In development the mock API answers /api/v1 until the Spring Boot server exists. */
+/** In development (and the e2e build) the mock API answers /api/v1 until the Spring Boot server exists. */
 async function startMocks(): Promise<void> {
-  if (!import.meta.env.DEV || import.meta.env.VITE_API_MOCKS === 'off') return;
-  const { startMockApi } = await import('./mocks/browser');
+  if (!mocksEnabled) return;
+  const { startMockApi } = await import('@mocks');
   await startMockApi();
 }
 

@@ -6,8 +6,8 @@
     "gzip": true
   },
   {
-    "name": "Map chunk (MapLibre 6 is ~286 kB of it; lazy-loaded after first paint)",
-    "path": "dist/assets/MapView-*.js",
+    "name": "Map chunks (MapLibre 6 is ~286 kB, shared by the map and the sign-in backdrop; lazy-loaded after first paint)",
+    "path": "dist/assets/MapView*.js",
     "limit": "310 kB",
     "gzip": true
   },

@@ -38,6 +38,8 @@ export interface MapControllerOptions {
   zoom: number;
   theme: ThemeName;
   reducedMotion: boolean;
+  /** False for a backdrop (the sign-in screen): no pan, zoom or keyboard. Default true. */
+  interactive?: boolean;
 }
 
 /** Hyderabad and its surroundings; the camera never wanders off the launch city. */
@@ -64,6 +66,7 @@ export function createMapController(options: MapControllerOptions): MapControlle
     style,
     center: [options.center.lng, options.center.lat],
     zoom: options.zoom,
+    interactive: options.interactive ?? true,
     minZoom: 9,
     maxZoom: 18,
     maxBounds,

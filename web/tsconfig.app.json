@@ -6,6 +6,7 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "jsx": "react-jsx",
+    "paths": { "@mocks": ["./src/mocks/browser.ts"] },
     "types": ["vite/client", "vite-plugin-pwa/client"],
     "skipLibCheck": true,
     "allowImportingTsExtensions": true,
