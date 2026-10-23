@@ -54,18 +54,3 @@
   padding: var(--space-4);
   padding-top: max(var(--space-4), env(safe-area-inset-top));
 }
-
-.prompt {
-  position: absolute;
-  inset: auto 0 var(--space-16);
-  z-index: var(--z-chrome);
-  text-align: center;
-}
-
-.headline {
-  margin: 0;
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-bold);
-  line-height: var(--line-height-tight);
-  color: var(--color-ink);
-}

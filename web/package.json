@@ -25,7 +25,8 @@
     "check": "npm run typecheck && npm run lint && npm run lint:css && npm run test",
     "icons": "node scripts/icons.ts",
     "fonts:specimen": "node scripts/specimen-fonts.ts",
-    "api:types": "npx -y openapi-typescript@7.13.0 ../api/openapi.yaml -o src/api/schema.d.ts && prettier --write src/api/schema.d.ts"
+    "api:types": "npx -y openapi-typescript@7.13.0 ../api/openapi.yaml -o src/api/schema.d.ts && prettier --write src/api/schema.d.ts",
+    "tiles": "node scripts/tiles.ts"
   },
   "dependencies": {
     "@protomaps/basemaps": "5.7.2",

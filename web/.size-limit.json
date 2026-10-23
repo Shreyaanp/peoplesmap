@@ -6,6 +6,12 @@
     "gzip": true
   },
   {
+    "name": "Map chunk (MapLibre 6 is ~286 kB of it; lazy-loaded after first paint)",
+    "path": "dist/assets/MapView-*.js",
+    "limit": "310 kB",
+    "gzip": true
+  },
+  {
     "name": "CSS",
     "path": "dist/assets/*.css",
     "limit": "15 kB",

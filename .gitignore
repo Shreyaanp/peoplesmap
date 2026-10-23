@@ -19,3 +19,6 @@ Thumbs.db
 
 # Fontshare specimen fonts: ITF FFL forbids redistributing the files, so they are downloaded, never committed.
 web/.storybook/specimen-fonts/
+
+# Map tiles: downloaded by `npm run tiles` (Protomaps extract, OpenStreetMap ODbL), never committed.
+web/public/tiles/

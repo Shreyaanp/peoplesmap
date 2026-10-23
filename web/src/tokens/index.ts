@@ -49,6 +49,45 @@ export const themes = {
 
 export type ThemeName = keyof typeof themes;
 
+/**
+ * Base map palette ("Grey World"): warm greys only, so amber stays reserved for people.
+ * Only MapLibre reads these (style JSON cannot use CSS variables). Earth equals --color-map.
+ */
+export const mapPalette = {
+  light: {
+    earth: themes.light.map,
+    water: '#d2d4d0',
+    park: '#dfdfd3',
+    landuse: '#e4e0d9',
+    buildings: '#ddd7cf',
+    roadMinor: '#f3f0eb',
+    roadMajor: '#f7f4f0',
+    roadHighway: '#f5efe6',
+    roadCasing: '#d6cfc5',
+    rail: '#d0c9bf',
+    boundary: '#bdb4a9',
+    label: '#7a7065',
+    labelStrong: '#5a5249',
+    labelHalo: themes.light.map,
+  },
+  dark: {
+    earth: themes.dark.map,
+    water: '#141617',
+    park: '#1e1e19',
+    landuse: '#201c19',
+    buildings: '#24201c',
+    roadMinor: '#28231f',
+    roadMajor: '#2f2924',
+    roadHighway: '#362f29',
+    roadCasing: '#1a1714',
+    rail: '#2c2621',
+    boundary: '#4a4139',
+    label: '#8f857a',
+    labelStrong: '#b3a99d',
+    labelHalo: themes.dark.map,
+  },
+} as const;
+
 export const space = { 1: 4, 2: 8, 3: 12, 4: 16, 5: 20, 6: 24, 8: 32, 10: 40, 12: 48, 16: 64 } as const;
 export const radius = { sm: 8, md: 12, lg: 20, xl: 28, pill: 999 } as const;
 export const size = { touch: 44, search: 56, iconSm: 20, icon: 24, iconLg: 32 } as const;
