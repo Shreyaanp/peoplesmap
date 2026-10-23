@@ -1,6 +1,6 @@
 import { devLoginChoices } from '@mocks';
 import { Aura } from '../../ui/Aura';
-import styles from './SignIn.module.css';
+import styles from './Screen.module.css';
 
 /**
  * Development only: sign in as any seeded person (POST /auth/dev), one per area, so every corner of

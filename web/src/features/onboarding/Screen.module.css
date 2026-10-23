@@ -165,7 +165,7 @@
   background: var(--color-surface-raised);
 }
 
-.devAvatar {
+.devRow .devAvatar {
   width: 32px;
   height: 32px;
 }

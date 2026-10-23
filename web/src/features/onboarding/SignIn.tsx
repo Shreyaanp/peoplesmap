@@ -5,7 +5,7 @@ import { MapPlaceholder } from '../../app/MapPlaceholder';
 import { useAfterFirstPaint } from '../../app/useAfterFirstPaint';
 import { Wordmark } from '../../ui/Wordmark';
 import { GoogleButton } from './GoogleButton';
-import styles from './SignIn.module.css';
+import styles from './Screen.module.css';
 
 const CityBackdrop = lazy(() => import('./CityBackdrop'));
 const DevSignIn = mocksEnabled ? lazy(() => import('./DevSignIn')) : null;

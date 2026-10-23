@@ -15,6 +15,7 @@
   --duration-crisp: 220ms;
   --duration-crisp-long: 300ms;
   --duration-fade: 200ms;
+  --stagger-item: 60ms;
 
   /* Components multiply movement distances by this; 0 under reduce-motion leaves only the fade. */
   --motion-scale: 1;

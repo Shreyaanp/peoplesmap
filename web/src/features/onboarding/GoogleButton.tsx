@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { googleClientId, mocksEnabled } from '../../app/config';
 import { useColorScheme } from '../../app/useColorScheme';
 import { loadGoogleIdentity, maxButtonWidth } from './googleIdentity';
-import styles from './SignIn.module.css';
+import styles from './Screen.module.css';
 
 interface GoogleButtonProps {
   onCredential: (credential: string) => void;

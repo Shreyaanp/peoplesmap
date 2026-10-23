@@ -1,4 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
+import { useMe } from '../../api/me';
+import type { LatLng } from '../../api/types';
 import { useColorScheme } from '../../app/useColorScheme';
 import { openPerson } from '../../app/urlState';
 import { useReducedMotionPreference } from '../../motion';
@@ -10,13 +12,18 @@ import { usePeopleTiles } from './usePeopleTiles';
 
 const devParams = new URLSearchParams(window.location.search);
 
+/** Area zoom: tag pins of the people around you, glows still breathing further out. */
+const homeZoom = 13.6;
+
 /**
- * Opening camera: the whole tech west and the old city, glowing.
+ * Opening camera: your own area, so the first thing you see is the people around you.
+ * Without a location: the whole tech west and the old city, glowing.
  * Development: `?camera=zoom,lat,lng` opens any view directly (motion lab, screenshots).
  */
-function initialCamera() {
+function initialCamera(home: LatLng | undefined) {
   const [zoom, lat, lng] = (devParams.get('camera') ?? '').split(',').map(Number);
   if (import.meta.env.DEV && zoom && lat && lng) return { center: { lat, lng }, zoom };
+  if (home) return { center: home, zoom: homeZoom };
   return { center: { lat: 17.425, lng: 78.42 }, zoom: 11.2 };
 }
 
@@ -31,13 +38,15 @@ export default function MapView() {
   const [view, setView] = useState<View | null>(null);
   const theme = useColorScheme();
   const reducedMotion = useReducedMotionPreference();
+  const home = useMe().data?.location?.publicPoint;
 
   // Created once; theme and reduced motion are applied by the effects below, not by recreating the map.
-  const initial = useRef({ theme, reducedMotion });
+  const initial = useRef({ theme, reducedMotion, home });
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
-    const created = createMapController({ container, ...initialCamera(), ...initial.current });
+    const { home: start, ...look } = initial.current;
+    const created = createMapController({ container, ...initialCamera(start), ...look });
     controllerRef.current = created;
     const unsubscribe = created.onViewChange((next) => {
       setController(created);

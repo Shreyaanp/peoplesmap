@@ -27,3 +27,7 @@ export type ParsedQuery = Schemas['ParsedQuery'];
 export type SearchResult = Schemas['SearchResult'];
 export type NearestCluster = Schemas['NearestCluster'];
 export type ConnectionState = Schemas['ConnectionState'];
+export type TagInput = Schemas['TagInput'];
+export type ExtractedTag = Schemas['ExtractedTag'];
+export type LocationMode = Schemas['LocationMode'];
+export type MyLocation = Schemas['MyLocation'];

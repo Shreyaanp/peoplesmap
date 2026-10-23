@@ -10,6 +10,7 @@ import { useAfterFirstPaint } from './useAfterFirstPaint';
 const MapView = lazy(() => import('../features/map/MapView'));
 const PeopleSheet = lazy(() => import('../features/sheet/PeopleSheet'));
 const SignIn = lazy(() => import('../features/onboarding/SignIn'));
+const Onboarding = lazy(() => import('../features/onboarding/Onboarding'));
 // Sign-out needs TanStack's mutation code; keep it out of the first-paint bundle.
 const AccountMenu = lazy(() => import('./AccountMenu'));
 
@@ -21,10 +22,17 @@ export function App() {
   );
 }
 
-/** Sign in and have a profile before the map: nobody sees people while signed out. */
+/** Sign in, then create a profile, before the map: nobody sees people until they are on it too. */
 function Session() {
   const me = useMe();
   if (me.isPending) return <MapPlaceholder />;
+  if (me.data?.status === 'onboarding') {
+    return (
+      <Suspense fallback={<MapPlaceholder />}>
+        <Onboarding me={me.data} />
+      </Suspense>
+    );
+  }
   if (me.data) return <SignedIn />;
   return (
     <Suspense fallback={<MapPlaceholder />}>
@@ -33,7 +41,6 @@ function Session() {
   );
 }
 
-// TODO(onboarding): a `status: onboarding` person goes through describe-yourself and Tag Birth first.
 function SignedIn() {
   // The shell (wordmark, search) paints and responds first; MapLibre's large script waits for idle.
   const mapAllowed = useAfterFirstPaint();

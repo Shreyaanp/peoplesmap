@@ -22,19 +22,20 @@ npm run size
 npm run test:e2e
 ```
 
-| Gate                                       | Catches                                                                                                                                                                                   |
-| ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Stylelint tokens rules                     | Raw colours, pure #000/#fff, non-token z-index/shadow/font                                                                                                                                |
-| Stylelint high-performance-animation       | Animating anything except transform/opacity                                                                                                                                               |
-| ESLint motion rule                         | Inline duration/easing/spring numbers                                                                                                                                                     |
-| `tokens.test.ts`                           | CSS and TS tokens drifting apart                                                                                                                                                          |
-| ESLint context rules                       | Contexts outside `web/src/state/`, exported raw contexts, unstable Provider values                                                                                                        |
-| Context unit tests                         | Hooks outside Provider not throwing; action-only readers re-rendering                                                                                                                     |
-| `web/e2e/a11y.spec.ts` (axe, light + dark) | Contrast, labels, landmarks                                                                                                                                                               |
-| `web/e2e/touch-targets.spec.ts`            | Interactive elements under 44px                                                                                                                                                           |
-| `web/e2e/reduced-motion.spec.ts`           | Animations ignoring reduce-motion                                                                                                                                                         |
-| size-limit                                 | Bundle growth past budget                                                                                                                                                                 |
-| Lighthouse CI (in GitHub Actions)          | Slow first paint, layout shift (errors). Blocking time, TTI and score only warn: headless Chrome draws MapLibre's WebGL on the CPU, so the map is gated by the device frame trace instead |
+| Gate                                               | Catches                                                                                                                                                                                   |
+| -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Stylelint tokens rules                             | Raw colours, pure #000/#fff, non-token z-index/shadow/font                                                                                                                                |
+| Stylelint high-performance-animation               | Animating anything except transform/opacity                                                                                                                                               |
+| ESLint motion rule                                 | Inline duration/easing/spring numbers                                                                                                                                                     |
+| `tokens.test.ts`                                   | CSS and TS tokens drifting apart                                                                                                                                                          |
+| ESLint context rules                               | Contexts outside `web/src/state/`, exported raw contexts, unstable Provider values                                                                                                        |
+| Context unit tests                                 | Hooks outside Provider not throwing; action-only readers re-rendering                                                                                                                     |
+| `web/e2e/a11y.spec.ts` (axe, light + dark)         | Contrast, labels, landmarks                                                                                                                                                               |
+| `web/e2e/touch-targets.spec.ts`                    | Interactive elements under 44px                                                                                                                                                           |
+| `web/e2e/onboarding.spec.ts`                       | The sign-up journey breaking; axe on every step                                                                                                                                           |
+| `web/e2e/reduced-motion.spec.ts`                   | Animations ignoring reduce-motion                                                                                                                                                         |
+| `npm run size` (size-limit + `scripts/budgets.ts`) | First-load JS/CSS and each lazy screen (sign-in, onboarding, map, sheet) past budget, following the import graph                                                                          |
+| Lighthouse CI (in GitHub Actions)                  | Slow first paint, layout shift (errors). Blocking time, TTI and score only warn: headless Chrome draws MapLibre's WebGL on the CPU, so the map is gated by the device frame trace instead |
 
 ## 2. Look at it
 

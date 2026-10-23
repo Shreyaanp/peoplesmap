@@ -1,0 +1,366 @@
+/* Onboarding needs more room than the sign-in card. */
+.card {
+  max-height: 88%;
+  gap: var(--space-3);
+}
+
+@media (width >= 900px) {
+  .card {
+    top: var(--space-10);
+    bottom: auto;
+    max-height: calc(100% - var(--space-10) * 2);
+  }
+}
+
+.progress {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: calc(var(--space-2) * -1) calc(var(--space-2) * -1) 0;
+}
+
+.back {
+  display: grid;
+  place-items: center;
+  width: var(--size-touch);
+  height: var(--size-touch);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--color-ink);
+  cursor: pointer;
+}
+
+.back:hover {
+  background: var(--color-surface-raised);
+}
+
+.backSpacer {
+  width: var(--size-touch);
+  height: var(--size-touch);
+}
+
+.dots {
+  display: flex;
+  gap: var(--space-2);
+  margin: 0 var(--space-3) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-pill);
+  background: var(--color-border);
+}
+
+.dot[data-done='true'] {
+  background: var(--color-accent);
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* The title takes focus when a step appears (for screen readers), without a ring. */
+.step h1:focus {
+  outline: none;
+}
+
+.field {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.label {
+  padding: 0;
+  color: var(--color-ink-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.input,
+.textarea,
+.select {
+  width: 100%;
+  min-height: var(--size-touch);
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-raised);
+  color: var(--color-ink);
+  font: inherit;
+}
+
+.textarea {
+  padding-top: var(--space-3);
+  padding-bottom: var(--space-6);
+  resize: none;
+  line-height: var(--line-height-body);
+}
+
+.input::placeholder,
+.textarea::placeholder {
+  color: var(--color-ink-muted);
+}
+
+.input:focus,
+.textarea:focus,
+.select:focus {
+  border-color: var(--color-focus);
+  outline: none;
+}
+
+.counter {
+  position: absolute;
+  right: var(--space-3);
+  bottom: var(--space-2);
+  color: var(--color-ink-secondary);
+  font-size: var(--font-size-xs);
+}
+
+/* Tag Birth: the sentence with its tag words marked. */
+.sentence {
+  margin: 0;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  background: var(--color-surface-raised);
+  color: var(--color-ink-secondary);
+  line-height: var(--line-height-body);
+}
+
+.wordLive {
+  display: inline-block;
+  color: var(--color-ink);
+  font-weight: var(--font-weight-bold);
+}
+
+.wordUsed {
+  color: var(--color-ink);
+  text-decoration: underline;
+  text-decoration-color: var(--color-accent);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 3px;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-soft);
+  color: var(--color-accent-soft-ink);
+}
+
+/* Landing: one soft amber ring that grows and fades. */
+.chip::after {
+  position: absolute;
+  inset: -1px;
+  border: 2px solid var(--color-accent);
+  border-radius: inherit;
+  opacity: 0;
+  pointer-events: none;
+  content: '';
+}
+
+.chip[data-landed='true']::after {
+  animation: land var(--duration-liquid-short) var(--ease-crisp) 1;
+}
+
+@keyframes land {
+  from {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+
+  to {
+    transform: scale(calc(1 + 0.18 * var(--motion-scale)));
+    opacity: 0;
+  }
+}
+
+.chipMain {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--size-touch);
+  padding: 0 var(--space-1) 0 var(--space-4);
+  border: 0;
+  border-radius: var(--radius-pill) 0 0 var(--radius-pill);
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+}
+
+.chipLevel {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-regular);
+}
+
+.chipRemove {
+  display: grid;
+  place-items: center;
+  width: var(--size-touch);
+  height: var(--size-touch);
+  border: 0;
+  border-radius: 0 var(--radius-pill) var(--radius-pill) 0;
+  background: none;
+  color: inherit;
+  cursor: pointer;
+}
+
+.addTag {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.addRow {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.addButton,
+.secondary {
+  flex: none;
+  min-height: var(--size-touch);
+  padding: 0 var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-raised);
+  color: var(--color-ink);
+  font: inherit;
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+}
+
+.addButton:disabled,
+.secondary:disabled {
+  color: var(--color-ink-muted);
+  cursor: default;
+}
+
+.options {
+  margin: 0;
+  padding: var(--space-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  list-style: none;
+}
+
+.option {
+  display: flex;
+  gap: var(--space-2);
+  align-items: baseline;
+  justify-content: space-between;
+  min-height: var(--size-touch);
+  padding: var(--space-3) var(--space-3);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.option[data-focused='true'] {
+  background: var(--color-surface-raised);
+}
+
+.optionTag {
+  font-weight: var(--font-weight-medium);
+}
+
+.optionCount {
+  color: var(--color-ink-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.identity {
+  display: flex;
+  gap: var(--space-4);
+  align-items: center;
+}
+
+.identity .aura {
+  flex: none;
+  width: 72px;
+  height: 72px;
+  box-shadow: var(--shadow-raised);
+}
+
+.auraNote {
+  margin: 0;
+  color: var(--color-ink-secondary);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-body);
+}
+
+.fieldset {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.modes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}
+
+.mode {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: var(--space-2);
+  align-items: center;
+  min-height: var(--size-touch);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+}
+
+.mode:has(input:checked) {
+  border-color: var(--color-accent);
+}
+
+.mode input {
+  grid-row: span 2;
+  accent-color: var(--color-accent);
+}
+
+.modeDetail {
+  color: var(--color-ink-secondary);
+  font-size: var(--font-size-xs);
+}
+
+.or {
+  margin-top: var(--space-1);
+  color: var(--color-ink-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.status {
+  min-height: 1.5em;
+  margin: 0;
+  color: var(--color-ink-secondary);
+  font-size: var(--font-size-sm);
+}

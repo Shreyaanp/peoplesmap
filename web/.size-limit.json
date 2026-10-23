@@ -1,26 +1,8 @@
 [
   {
-    "name": "Initial JS (search-first shell)",
-    "path": "dist/assets/index-*.js",
-    "limit": "90 kB",
-    "gzip": true
-  },
-  {
-    "name": "Map chunks (MapLibre 6 is ~286 kB, shared by the map and the sign-in backdrop; lazy-loaded after first paint)",
-    "path": "dist/assets/MapView*.js",
-    "limit": "310 kB",
-    "gzip": true
-  },
-  {
-    "name": "Sheet chunk (Motion drag features are ~30 kB of it; loads after the map)",
-    "path": "dist/assets/PeopleSheet-*.js",
-    "limit": "50 kB",
-    "gzip": true
-  },
-  {
-    "name": "CSS (MapLibre's stylesheet is ~11 kB of it)",
+    "name": "All CSS, lazy screens included (MapLibre's stylesheet is ~11 kB of it)",
     "path": "dist/assets/*.css",
-    "limit": "18 kB",
+    "limit": "22 kB",
     "gzip": true
   },
   {

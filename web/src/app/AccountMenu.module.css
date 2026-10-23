@@ -15,7 +15,7 @@
   transform: scale(calc(1 - 0.06 * var(--motion-scale)));
 }
 
-.aura {
+.trigger .aura {
   width: 36px;
   height: 36px;
   box-shadow: var(--shadow-raised);

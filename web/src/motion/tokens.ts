@@ -30,6 +30,9 @@ export const spring = {
   soft: { type: 'spring', stiffness: 260, damping: 30, mass: 1 },
 } as const;
 
+/** Delay between items that arrive one after another (Tag Birth chips, pins springing out). */
+export const stagger = { item: 0.06 } as const;
+
 /** Reduced-motion fallback: a plain fade. */
 export const fade = { duration: 0.2, ease: crisp.ease } as const;
 

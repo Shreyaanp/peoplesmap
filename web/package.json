@@ -19,7 +19,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "size": "size-limit",
+    "size": "size-limit && node scripts/budgets.ts",
     "lhci": "lhci autorun",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",

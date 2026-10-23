@@ -1,6 +1,15 @@
 import { delay, http, HttpResponse, type RequestHandler } from 'msw';
-import type { Problem } from '../api/types';
+import type { LatLng, LocationMode, Problem, TagInput } from '../api/types';
 import { parseBbox } from './data/geo';
+import {
+  addToWorld,
+  createNewcomer,
+  extractTags,
+  newcomerToMe,
+  placeNewcomer,
+  toMockTags,
+  type Newcomer,
+} from './data/onboarding';
 import {
   cityGlow,
   discover,
@@ -24,6 +33,9 @@ import { createWorld, type MockWorld } from './data/world';
  * - `?people=50000` builds the stress world (default 2,000 people)
  * - `?latency=3g` (600ms), `?latency=slow` (1500ms) or `?latency=250` (ms) delays every response
  * - `?fail=0.1` fails 10% of requests with a 503 problem
+ *
+ * Sign-in: the Google button signs in "you", a newcomer who goes through onboarding (credential
+ * `mock-new-person` starts a fresh one); the test-person picker signs in as any seeded person.
  */
 
 const base = '*/api/v1';
@@ -37,6 +49,7 @@ function getWorld(): MockWorld {
   if (!world) {
     const count = Number(pageParams().get('people')) || 2000;
     world = createWorld(Math.min(Math.max(count, 1), 100_000));
+    if (newcomer) addToWorld(world, newcomer);
   }
   return world;
 }
@@ -45,17 +58,22 @@ function getWorld(): MockWorld {
 export function resetMockWorld(next?: MockWorld): void {
   world = next;
   signedInId = undefined;
+  newcomer = undefined;
   connections.clear();
 }
 
 // Everyone starts signed out, like the real app. The dev session lives in memory and survives
 // reloads through localStorage when it is available.
 const sessionKey = 'peoplemap.mock.session';
+const newcomerKey = 'peoplemap.mock.newcomer';
 let signedInId: string | undefined;
+let newcomer: Newcomer | undefined;
 /** People the dev user connects to (in memory; a reload starts fresh). */
 const connections = new Set<string>();
 try {
   signedInId = globalThis.localStorage?.getItem(sessionKey) ?? undefined;
+  const saved = globalThis.localStorage?.getItem(newcomerKey);
+  newcomer = saved ? (JSON.parse(saved) as Newcomer) : undefined;
 } catch {
   // Storage blocked: the session just resets on reload.
 }
@@ -68,9 +86,33 @@ function saveSession(value: string | undefined): void {
   }
 }
 
+function saveNewcomer(next: Newcomer): void {
+  newcomer = next;
+  if (world) addToWorld(world, next);
+  try {
+    globalThis.localStorage?.setItem(newcomerKey, JSON.stringify(next));
+  } catch {
+    // Ignore.
+  }
+}
+
+/** The signed-in person on the map. A newcomer still onboarding is not one yet. */
 function currentUser() {
   return signedInId ? getWorld().byId.get(signedInId) : undefined;
 }
+
+/** The newcomer, when they are the one signed in (onboarding or not). */
+function signedInNewcomer(): Newcomer | undefined {
+  return newcomer && signedInId === newcomer.id ? newcomer : undefined;
+}
+
+function isLatLng(value: unknown): value is LatLng {
+  const v = value as Partial<LatLng> | null;
+  return typeof v?.lat === 'number' && typeof v.lng === 'number';
+}
+
+/** Seeded people's profiles are fixed in the mock. */
+const readOnly = () => problem(400, 'bad-request', 'Mock: seeded people are read-only');
 
 function problem(status: number, code: Problem['code'], title: string, detail?: string) {
   const body: Problem = {
@@ -118,17 +160,24 @@ function tileParams(params: Record<string, string | readonly string[] | undefine
   return { z, x, y };
 }
 
-const unauthorized = () => problem(401, 'unauthorized', 'Sign in to continue');
+/** 401 when signed out; 403 profile-required while the signed-in newcomer is still onboarding. */
+const unauthorized = () =>
+  signedInNewcomer()?.status === 'onboarding'
+    ? problem(403, 'profile-required', 'Finish your profile first')
+    : problem(401, 'unauthorized', 'Sign in to continue');
 
 export const handlers: RequestHandler[] = [
   // ── auth ──
-  // Any credential is accepted and signs in as the dev user (Riya in Gachibowli).
-  http.post(`${base}/auth/google`, async () => {
+  // Any credential is accepted: it signs in as "you", created on first sign-in in `onboarding`.
+  http.post(`${base}/auth/google`, async ({ request }) => {
     const failure = await devSwitches();
     if (failure) return failure;
-    signedInId = getWorld().me.id;
-    saveSession(signedInId);
-    return HttpResponse.json(toMe(getWorld().me));
+    const { credential } = (await request.json()) as { credential: string };
+    const you = newcomer && credential !== 'mock-new-person' ? newcomer : createNewcomer(crypto.randomUUID());
+    saveNewcomer(you);
+    signedInId = you.id;
+    saveSession(you.id);
+    return HttpResponse.json(newcomerToMe(you));
   }),
 
   http.post(`${base}/auth/dev`, async ({ request }) => {
@@ -143,7 +192,7 @@ export const handlers: RequestHandler[] = [
   }),
 
   http.post(`${base}/auth/logout`, () => {
-    if (!currentUser()) return unauthorized();
+    if (!signedInId) return unauthorized();
     signedInId = undefined;
     saveSession(undefined);
     return new HttpResponse(null, { status: 204 });
@@ -153,16 +202,67 @@ export const handlers: RequestHandler[] = [
   http.get(`${base}/me`, async () => {
     const failure = await devSwitches();
     if (failure) return failure;
+    const you = signedInNewcomer();
+    if (you) return HttpResponse.json(newcomerToMe(you));
     const me = currentUser();
     return me ? HttpResponse.json(toMe(me)) : unauthorized();
   }),
 
-  // ── tags ──
+  // Onboarding: location first, then the profile that puts you on the map.
+  // Only the newcomer can change these in the mock; seeded people are read-only.
+  http.put(`${base}/me/location`, async ({ request }) => {
+    const failure = await devSwitches();
+    if (failure) return failure;
+    const you = signedInNewcomer();
+    if (!you) return currentUser() ? readOnly() : unauthorized();
+    const body = (await request.json()) as { point?: unknown; mode?: LocationMode };
+    if (!isLatLng(body.point) || (body.mode !== 'exact' && body.mode !== 'neighbourhood')) {
+      return problem(422, 'validation-failed', 'Point and mode are required');
+    }
+    const placed = placeNewcomer(you.id, body.point, body.mode);
+    if (!placed) return problem(422, 'outside-launch-area', 'peoplemap is only in Hyderabad for now');
+    saveNewcomer({
+      ...you,
+      location: { mode: placed.mode, point: placed.publicPoint, locality: placed.locality },
+    });
+    return HttpResponse.json(placed);
+  }),
+
+  http.put(`${base}/me/profile`, async ({ request }) => {
+    const failure = await devSwitches();
+    if (failure) return failure;
+    const you = signedInNewcomer();
+    if (!you) return currentUser() ? readOnly() : unauthorized();
+    if (!you.location) return problem(409, 'location-required', 'Set your location first');
+    const body = (await request.json()) as { displayName?: string; sentence?: string; tags?: TagInput[] };
+    const displayName = body.displayName?.trim() ?? '';
+    const tags = toMockTags(body.tags ?? []);
+    if (displayName === '' || displayName.length > 40 || tags.length === 0) {
+      return problem(422, 'validation-failed', 'A name and at least one tag are needed');
+    }
+    const saved: Newcomer = { ...you, status: 'active', displayName, sentence: body.sentence ?? null, tags };
+    saveNewcomer(saved);
+    return HttpResponse.json(newcomerToMe(saved));
+  }),
+
+  // ── tags ── (open during onboarding too)
+  http.post(`${base}/tags/extract`, async ({ request }) => {
+    const failure = await devSwitches();
+    if (failure) return failure;
+    if (!signedInId) return unauthorized();
+    const { sentence } = (await request.json()) as { sentence?: string };
+    if (typeof sentence !== 'string' || sentence.trim().length < 3 || sentence.length > 280) {
+      return problem(422, 'validation-failed', 'Write between 3 and 280 characters');
+    }
+    return HttpResponse.json({ tags: extractTags(sentence) });
+  }),
+
   http.get(`${base}/tags/suggest`, async ({ request }) => {
     const failure = await devSwitches();
     if (failure) return failure;
-    const me = currentUser();
-    if (!me) return unauthorized();
+    if (!signedInId) return unauthorized();
+    // A newcomer has no location yet: suggestions count around the city's busiest area.
+    const me = currentUser() ?? getWorld().me;
     const url = new URL(request.url);
     const q = url.searchParams.get('q') ?? '';
     const [lat, lng] = (url.searchParams.get('near') ?? '').split(',').map(Number);
