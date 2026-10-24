@@ -44,6 +44,15 @@ export default defineConfig(({ mode }) => {
     css: {
       modules: { localsConvention: 'camelCaseOnly' },
     },
+    build: {
+      rolldownOptions: {
+        // Generated icons only define components, so importing the icon index never pulls in
+        // icons nobody uses. Every other module keeps the default side-effect detection.
+        treeshake: {
+          moduleSideEffects: [{ test: /[\\/]ui[\\/]icons[\\/]generated[\\/]/, sideEffects: false }],
+        },
+      },
+    },
     server: { port: 5173 },
     preview: { port: 4173 },
   };

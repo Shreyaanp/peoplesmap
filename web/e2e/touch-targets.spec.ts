@@ -13,8 +13,10 @@ async function tooSmall(page: Page) {
           // The map's licence credit is inline text; WCAG 2.5.8 exempts inline links.
           .filter((el) => !el.closest('.maplibregl-ctrl-attrib-inner'))
           .map((el) => {
+            // A checkbox or radio inside a label is tapped through the whole label.
+            const label = el instanceof HTMLInputElement ? el.closest('label') : null;
             // Map pins are zero-size anchors; their hit area is the largest box inside, centred on the point.
-            const own = el.getBoundingClientRect();
+            const own = (label ?? el).getBoundingClientRect();
             const r =
               own.width === 0 && own.height === 0
                 ? [...el.querySelectorAll('*')]
@@ -60,6 +62,26 @@ test('inbox: every interactive element is at least 44×44px', async ({ page }) =
     .first()
     .click();
   await expect(page.getByRole('log')).toBeVisible();
+  await settle(page);
+  expect(await tooSmall(page)).toEqual([]);
+});
+
+test('safety: the More menu, the report dialog and the account panel', async ({ page }) => {
+  await signIn(page);
+  const id = await page.locator('[data-person-id]').first().getAttribute('data-person-id');
+  await page.goto(`/?person=${id}`);
+  await page.getByRole('button', { name: /^More options for / }).click();
+  await settle(page);
+  expect(await tooSmall(page)).toEqual([]);
+
+  await page.getByRole('button', { name: /^Report / }).click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await settle(page);
+  expect(await tooSmall(page)).toEqual([]);
+  await page.keyboard.press('Escape');
+
+  await page.getByRole('button', { name: /^Your account/ }).click();
+  await page.getByRole('button', { name: 'Blocked people' }).click();
   await settle(page);
   expect(await tooSmall(page)).toEqual([]);
 });

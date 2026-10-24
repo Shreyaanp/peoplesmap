@@ -42,6 +42,11 @@ export interface Inbox {
   unignore(threadId: string): ThreadSummary | undefined;
   /** I connected to them: their Glow, if any, moves to Chats. */
   connected(personId: string): void;
+  /** Blocking hides our thread from me. It is kept, so unblocking brings it back. */
+  block(personId: string): void;
+  unblock(personId: string): void;
+  /** Who wrote a message, for reports about one. */
+  messageSender(messageId: string): string | undefined;
   summary(): InboxSummary;
 }
 
@@ -196,9 +201,11 @@ function inboxFrom(me: MockPerson, threads: Map<string, MockThread>, random: Ran
     };
   };
 
+  const blocked = new Set<string>();
+  const hidden = (t: MockThread) => t.ignored || blocked.has(t.other.id);
   const visible = (id: string) => {
     const t = threads.get(id);
-    return t && !t.ignored ? t : undefined;
+    return t && !hidden(t) ? t : undefined;
   };
 
   const add = (t: MockThread, senderId: string, input: MessageInput) => {
@@ -219,7 +226,7 @@ function inboxFrom(me: MockPerson, threads: Map<string, MockThread>, random: Ran
     me,
     list: (folder) =>
       [...threads.values()]
-        .filter((t) => t.folder === folder && !t.ignored)
+        .filter((t) => t.folder === folder && !hidden(t))
         .map(summary)
         .sort((a, b) => b.updatedAt.localeCompare(a.updatedAt)),
     get: (id) => {
@@ -227,7 +234,7 @@ function inboxFrom(me: MockPerson, threads: Map<string, MockThread>, random: Ran
       return t && summary(t);
     },
     threadWith: (personId) => {
-      const t = [...threads.values()].find((x) => x.other.id === personId && !x.ignored);
+      const t = [...threads.values()].find((x) => x.other.id === personId && !hidden(x));
       return t && summary(t);
     },
     messages: (id, { after, before, limit }) => {
@@ -307,8 +314,17 @@ function inboxFrom(me: MockPerson, threads: Map<string, MockThread>, random: Ran
     connected: (personId) => {
       for (const t of threads.values()) if (t.other.id === personId && !t.ignored) t.folder = 'chats';
     },
+    block: (personId) => void blocked.add(personId),
+    unblock: (personId) => void blocked.delete(personId),
+    messageSender: (messageId) => {
+      for (const t of threads.values()) {
+        const found = t.messages.find((m) => m.id === messageId);
+        if (found) return found.senderId;
+      }
+      return undefined;
+    },
     summary: () => {
-      const open = [...threads.values()].filter((t) => !t.ignored);
+      const open = [...threads.values()].filter((t) => !hidden(t));
       const count = (folder: Folder) =>
         open.filter((t) => t.folder === folder).reduce((sum, t) => sum + unread(t), 0);
       return { chatsUnread: count('chats'), glowsUnread: count('glows') };

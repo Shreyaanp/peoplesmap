@@ -40,3 +40,8 @@ export function formatSentAt(sentAt: string, now = Date.now()): string {
 export function formatClock(sentAt: string): string {
   return new Intl.DateTimeFormat('en-IN', { hour: 'numeric', minute: '2-digit' }).format(Date.parse(sentAt));
 }
+
+/** "Ritika Rao" → "Ritika", for short copy like "Say hi to Ritika". */
+export function firstName(displayName: string): string {
+  return displayName.split(' ')[0] || displayName;
+}

@@ -46,6 +46,11 @@
   cursor: pointer;
 }
 
+/* The More menu sits at the far end. */
+.header > :last-child:not(.person, .back) {
+  margin-left: auto;
+}
+
 .back:hover,
 .person:hover {
   background: var(--color-surface-raised);

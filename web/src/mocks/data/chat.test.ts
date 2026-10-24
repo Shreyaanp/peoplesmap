@@ -110,4 +110,26 @@ describe('mock inbox', () => {
     expect(started.created).toBe(false);
     expect(started.thread.id).toBe(chat.id);
   });
+
+  it('blocking hides our thread and its unread count; unblocking brings it back', () => {
+    const { inbox } = fresh();
+    const glow = inbox.list('glows')[0];
+    if (!glow) throw new Error('No glow seeded');
+    const before = inbox.summary().glowsUnread;
+    inbox.block(glow.other.id);
+    expect(inbox.list('glows').map((t) => t.id)).not.toContain(glow.id);
+    expect(inbox.get(glow.id)).toBeUndefined();
+    expect(inbox.threadWith(glow.other.id)).toBeUndefined();
+    expect(inbox.summary().glowsUnread).toBe(before - glow.unreadCount);
+    inbox.unblock(glow.other.id);
+    expect(inbox.get(glow.id)?.folder).toBe('glows');
+  });
+
+  it('knows who wrote a message, for reports about one', () => {
+    const { inbox } = fresh();
+    const glow = inbox.list('glows')[0];
+    if (!glow) throw new Error('No glow seeded');
+    expect(inbox.messageSender(glow.lastMessage.id)).toBe(glow.other.id);
+    expect(inbox.messageSender('missing')).toBeUndefined();
+  });
 });

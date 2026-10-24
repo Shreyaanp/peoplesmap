@@ -33,6 +33,8 @@ export interface MockWorld {
   byId: Map<string, MockPerson>;
   /** The seeded person the dev login starts as. */
   me: MockPerson;
+  /** Who blocked whom: blocker id → blocked ids. Either direction hides each from the other. */
+  blocks: Map<string, Set<string>>;
 }
 
 const firstNames = [
@@ -134,7 +136,7 @@ export function createWorld(count: number, seed = 42, now = Date.now()): MockWor
   } satisfies Partial<MockPerson>);
   placePerson(me, home, random);
 
-  return { people, byId: new Map(people.map((p) => [p.id, p])), me };
+  return { people, byId: new Map(people.map((p) => [p.id, p])), me, blocks: new Map() };
 }
 
 function createPerson(random: Random, timeMs: number, now: number): MockPerson {

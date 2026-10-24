@@ -32,6 +32,9 @@ const icons = {
   sparkle: 'sparkle',
   expand: 'caret-down',
   send: 'paper-plane-right',
+  report: 'flag',
+  block: 'prohibit',
+  hidden: 'eye-slash',
 } as const;
 
 const weights = ['light', 'regular', 'duotone'] as const;

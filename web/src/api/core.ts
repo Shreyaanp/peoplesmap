@@ -14,6 +14,7 @@ export const queryKeys = {
   threads: (folder: string) => ['inbox', 'threads', folder] as const,
   thread: (id: string) => ['inbox', 'thread', id] as const,
   messages: (threadId: string) => ['inbox', 'messages', threadId] as const,
+  blocks: ['blocks'] as const,
 };
 
 /** A failed API call, with the HTTP status and problem code so callers can react to the cause. */

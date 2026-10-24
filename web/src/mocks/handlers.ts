@@ -1,5 +1,15 @@
 import { delay, http, HttpResponse, type RequestHandler } from 'msw';
-import type { LatLng, LocationMode, MessageInput, Problem, TagInput } from '../api/types';
+import type {
+  LatLng,
+  LocationMode,
+  Me,
+  MessageInput,
+  Problem,
+  ReportInput,
+  Settings,
+  SettingsPatch,
+  TagInput,
+} from '../api/types';
 import { createInbox, mockReplies, type Inbox } from './data/chat';
 import { parseBbox } from './data/geo';
 import {
@@ -12,6 +22,7 @@ import {
   type Newcomer,
 } from './data/onboarding';
 import {
+  blockedBetween,
   cityGlow,
   discover,
   glowTile,
@@ -52,6 +63,10 @@ function getWorld(): MockWorld {
     const count = Number(pageParams().get('people')) || 2000;
     world = createWorld(Math.min(Math.max(count, 1), 100_000));
     if (newcomer) addToWorld(world, newcomer);
+    for (const [id, saved] of settings) {
+      const person = world.byId.get(id);
+      if (person) person.hiddenFromMap = saved.hiddenFromMap;
+    }
   }
   return world;
 }
@@ -63,6 +78,8 @@ export function resetMockWorld(next?: MockWorld): void {
   newcomer = undefined;
   connections.clear();
   inboxes.clear();
+  settings.clear();
+  reports.length = 0;
 }
 
 // Everyone starts signed out, like the real app. The dev session lives in memory and survives
@@ -75,10 +92,19 @@ let newcomer: Newcomer | undefined;
 const connections = new Set<string>();
 /** Each signed-in person's threads, seeded on first use (in memory; a reload starts fresh). */
 const inboxes = new Map<string, Inbox>();
+/** Settings people have changed, by person. Kept across reloads, like the session. */
+const settingsKey = 'peoplemap.mock.settings';
+const settings = new Map<string, Settings>();
+/** Reports received, newest last: the mock's stand-in for the moderation queue. */
+export const reports: ReportInput[] = [];
 try {
   signedInId = globalThis.localStorage?.getItem(sessionKey) ?? undefined;
   const saved = globalThis.localStorage?.getItem(newcomerKey);
   newcomer = saved ? (JSON.parse(saved) as Newcomer) : undefined;
+  const savedSettings = globalThis.localStorage?.getItem(settingsKey);
+  if (savedSettings)
+    for (const [id, value] of Object.entries(JSON.parse(savedSettings) as Record<string, Settings>))
+      settings.set(id, value);
 } catch {
   // Storage blocked: the session just resets on reload.
 }
@@ -121,6 +147,51 @@ function inboxFor(me: MockPerson): Inbox {
     seeded.connected.forEach((id) => connections.add(id));
   }
   return inbox;
+}
+
+/** My profile with this session's settings on top. */
+function withSettings(me: Me): Me {
+  return { ...me, settings: settings.get(me.id) ?? me.settings };
+}
+
+const settingKeys = ['hiddenFromMap', 'notifyChats', 'notifyGlows'] as const;
+function isSettingsPatch(value: unknown): value is SettingsPatch {
+  if (!value || typeof value !== 'object') return false;
+  const entries = Object.entries(value);
+  return (
+    entries.length > 0 &&
+    entries.every(([key, v]) => settingKeys.includes(key as never) && typeof v === 'boolean')
+  );
+}
+
+const reportReasons = new Set<string>([
+  'fake_profile',
+  'harassment',
+  'spam',
+  'inappropriate_photo',
+  'underage',
+  'unsafe',
+  'other',
+]);
+function isReportInput(value: unknown): value is ReportInput {
+  const v = value as Partial<ReportInput> | null;
+  return (
+    !!v &&
+    (v.subject?.kind === 'person' || v.subject?.kind === 'message') &&
+    typeof v.subject.id === 'string' &&
+    typeof v.reason === 'string' &&
+    reportReasons.has(v.reason) &&
+    (v.note === undefined || (typeof v.note === 'string' && v.note.length <= 500))
+  );
+}
+
+/** Blocking cuts connections both ways and hides us from each other, everywhere. They aren't told. */
+function block(me: MockPerson, personId: string): void {
+  const mine = getWorld().blocks.get(me.id) ?? new Set<string>();
+  mine.add(personId);
+  getWorld().blocks.set(me.id, mine);
+  connections.delete(personId);
+  inboxFor(me).block(personId);
 }
 
 /** Stands in for the socket: the other person answers a moment after I write, once per burst. */
@@ -241,9 +312,27 @@ export const handlers: RequestHandler[] = [
     const failure = await devSwitches();
     if (failure) return failure;
     const you = signedInNewcomer();
-    if (you) return HttpResponse.json(newcomerToMe(you));
+    if (you) return HttpResponse.json(withSettings(newcomerToMe(you)));
     const me = currentUser();
-    return me ? HttpResponse.json(toMe(me)) : unauthorized();
+    return me ? HttpResponse.json(withSettings(toMe(me))) : unauthorized();
+  }),
+
+  http.patch(`${base}/me/settings`, async ({ request }) => {
+    const failure = await devSwitches();
+    if (failure) return failure;
+    const me = currentUser();
+    if (!me) return unauthorized();
+    const patch: unknown = await request.json();
+    if (!isSettingsPatch(patch)) return problem(422, 'validation-failed', 'Unknown setting');
+    const next = { ...withSettings(toMe(me)).settings, ...patch };
+    settings.set(me.id, next);
+    try {
+      globalThis.localStorage?.setItem(settingsKey, JSON.stringify(Object.fromEntries(settings)));
+    } catch {
+      // Ignore.
+    }
+    me.hiddenFromMap = next.hiddenFromMap;
+    return HttpResponse.json(next);
   }),
 
   // Onboarding: location first, then the profile that puts you on the map.
@@ -400,7 +489,7 @@ export const handlers: RequestHandler[] = [
     const me = currentUser();
     if (!me) return unauthorized();
     const person = getWorld().byId.get(String(params.personId));
-    if (!person || (person.hiddenFromMap && person !== me))
+    if (!person || (person.hiddenFromMap && person !== me) || blockedBetween(getWorld(), me.id, person.id))
       return problem(404, 'not-found', 'Person not found');
     const card = profile(person, me);
     return HttpResponse.json({
@@ -457,7 +546,8 @@ export const handlers: RequestHandler[] = [
     if (!me) return unauthorized();
     const body = (await request.json()) as { recipientId?: string; message?: unknown };
     const other = body.recipientId ? getWorld().byId.get(body.recipientId) : undefined;
-    if (!other || other === me) return problem(404, 'not-found', 'Person not found');
+    if (!other || other === me || blockedBetween(getWorld(), me.id, other.id))
+      return problem(404, 'not-found', 'Person not found');
     if (!isMessageInput(body.message)) return problem(422, 'validation-failed', 'Write a message first');
     const inbox = inboxFor(me);
     const started = inbox.start(other, body.message);
@@ -550,6 +640,55 @@ export const handlers: RequestHandler[] = [
     if (!me) return unauthorized();
     const thread = inboxFor(me).unignore(String(params.threadId));
     return thread ? HttpResponse.json(thread) : problem(404, 'not-found', 'Conversation not found');
+  }),
+
+  // ── safety ──
+  http.put(`${base}/blocks/:personId`, async ({ params }) => {
+    const failure = await devSwitches();
+    if (failure) return failure;
+    const me = currentUser();
+    if (!me) return unauthorized();
+    const id = String(params.personId);
+    if (id !== me.id) block(me, id);
+    return new HttpResponse(null, { status: 204 });
+  }),
+
+  http.delete(`${base}/blocks/:personId`, async ({ params }) => {
+    const failure = await devSwitches();
+    if (failure) return failure;
+    const me = currentUser();
+    if (!me) return unauthorized();
+    const id = String(params.personId);
+    getWorld().blocks.get(me.id)?.delete(id);
+    inboxFor(me).unblock(id);
+    return new HttpResponse(null, { status: 204 });
+  }),
+
+  http.get(`${base}/me/blocks`, async () => {
+    const failure = await devSwitches();
+    if (failure) return failure;
+    const me = currentUser();
+    if (!me) return unauthorized();
+    const items = [...(getWorld().blocks.get(me.id) ?? [])].toReversed().flatMap((id) => {
+      const person = getWorld().byId.get(id);
+      return person ? [{ id, displayName: person.displayName, photo: null }] : [];
+    });
+    return HttpResponse.json({ items, nextCursor: null });
+  }),
+
+  http.post(`${base}/reports`, async ({ request }) => {
+    const failure = await devSwitches();
+    if (failure) return failure;
+    const me = currentUser();
+    if (!me) return unauthorized();
+    const input: unknown = await request.json();
+    if (!isReportInput(input)) return problem(422, 'validation-failed', 'Choose a reason');
+    const personId =
+      input.subject.kind === 'person' ? input.subject.id : inboxFor(me).messageSender(input.subject.id);
+    if (!personId || !getWorld().byId.has(personId)) return problem(404, 'not-found', 'Not found');
+    reports.push(input);
+    if (input.alsoBlock !== false) block(me, personId);
+    return new HttpResponse(null, { status: 202 });
   }),
 ];
 

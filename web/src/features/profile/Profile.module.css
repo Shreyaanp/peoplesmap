@@ -22,6 +22,10 @@
   background: var(--color-surface-raised);
 }
 
+.more {
+  margin-left: auto;
+}
+
 .card {
   display: flex;
   flex-direction: column;

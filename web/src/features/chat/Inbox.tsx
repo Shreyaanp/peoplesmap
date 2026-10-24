@@ -1,5 +1,5 @@
 import { AnimatePresence, domMax, LazyMotion } from 'motion/react';
-import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
+import { useEffect, useRef, type KeyboardEvent } from 'react';
 import { useTab, useTabList, useTabPanel } from 'react-aria';
 import { Item, useTabListState, type Node, type TabListState } from 'react-stately';
 import { useIgnoreGlow } from '../../api/chat';
@@ -14,13 +14,11 @@ import {
   useOpenThread,
   type InboxFolder,
 } from '../../app/urlState';
+import { useToastActions } from '../../state/toast';
 import { BackIcon } from '../../ui/icons/generated';
 import { Conversation } from './Conversation';
 import styles from './Inbox.module.css';
 import { ThreadList } from './ThreadList';
-
-/** How long "Ignored · Undo" stays up. */
-const undoWindow = 6_000;
 
 /**
  * Messages: Chats (people you connect to) and Glows (everyone else, like message requests), with a
@@ -34,7 +32,7 @@ export default function Inbox() {
   const talking = threadId ?? draftWith;
   const open = folder !== null || talking !== null;
   const { ignore, undo } = useIgnoreGlow();
-  const [ignored, setIgnored] = useState<ThreadSummary | null>(null);
+  const toast = useToastActions();
   const headingRef = useRef<HTMLHeadingElement>(null);
 
   // Focus follows the panel: into it on open, back to the inbox button on close.
@@ -46,15 +44,12 @@ export default function Inbox() {
     else document.querySelector<HTMLElement>('[data-inbox-trigger]')?.focus({ preventScroll: true });
   }, [open]);
 
-  useEffect(() => {
-    if (!ignored) return;
-    const timer = setTimeout(() => setIgnored(null), undoWindow);
-    return () => clearTimeout(timer);
-  }, [ignored]);
-
   const onIgnore = (thread: ThreadSummary) => {
     ignore(thread.id);
-    setIgnored(thread);
+    toast.show({
+      text: `Ignored. ${thread.other.displayName} won't be told.`,
+      action: { label: 'Undo', run: () => undo(thread.id) },
+    });
   };
 
   const onKeyDown = (event: KeyboardEvent) => {
@@ -95,22 +90,6 @@ export default function Inbox() {
             <Conversation key={talking} threadId={threadId} draftWith={draftWith} onIgnore={onIgnore} />
           )}
         </AnimatePresence>
-
-        {ignored && (
-          <div className={styles.toast} role="status">
-            <span>Ignored. {ignored.other.displayName} won't be told.</span>
-            <button
-              type="button"
-              className={styles.undo}
-              onClick={() => {
-                undo(ignored.id);
-                setIgnored(null);
-              }}
-            >
-              Undo
-            </button>
-          </div>
-        )}
       </aside>
     </LazyMotion>
   );

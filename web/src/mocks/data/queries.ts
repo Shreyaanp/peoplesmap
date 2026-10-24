@@ -38,8 +38,15 @@ export function glowResolution(z: number): 6 | 7 | 8 {
   return 8;
 }
 
+/** True when either of the two has blocked the other. */
+export function blockedBetween(world: MockWorld, a: string, b: string): boolean {
+  return !!world.blocks.get(a)?.has(b) || !!world.blocks.get(b)?.has(a);
+}
+
 function visible(world: MockWorld, me: MockPerson | undefined): MockPerson[] {
-  return world.people.filter((p) => !p.hiddenFromMap || p === me);
+  return world.people.filter(
+    (p) => p === me || (!p.hiddenFromMap && !(me && blockedBetween(world, me.id, p.id))),
+  );
 }
 
 function matcher(tags: readonly string[]) {

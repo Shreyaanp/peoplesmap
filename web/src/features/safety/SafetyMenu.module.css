@@ -1,0 +1,65 @@
+.trigger {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: var(--size-touch);
+  height: var(--size-touch);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--color-ink);
+  cursor: pointer;
+}
+
+.trigger:hover {
+  background: var(--color-surface-raised);
+}
+
+/* A native popover in the top layer, pinned under its trigger (placed on the opening tap). */
+.panel {
+  position: fixed;
+  inset: auto;
+  top: var(--menu-top, var(--space-8));
+  right: var(--menu-right, var(--space-4));
+  min-width: 200px;
+  margin: 0;
+  padding: var(--space-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  color: var(--color-ink);
+  box-shadow: var(--shadow-raised);
+}
+
+.panel:popover-open {
+  animation: drop var(--duration-crisp) var(--ease-crisp) both;
+}
+
+@keyframes drop {
+  from {
+    transform: translateY(calc(-6px * var(--motion-scale))) scale(calc(1 - 0.04 * var(--motion-scale)));
+    opacity: 0;
+  }
+}
+
+.item {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  width: 100%;
+  min-height: var(--size-touch);
+  padding: 0 var(--space-4) 0 var(--space-3);
+  border: 0;
+  border-radius: var(--radius-md);
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: var(--font-weight-medium);
+  text-align: start;
+  cursor: pointer;
+}
+
+.item:hover {
+  background: var(--color-surface-raised);
+}

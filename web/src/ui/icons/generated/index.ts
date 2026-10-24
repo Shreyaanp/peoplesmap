@@ -20,6 +20,9 @@ export { TimeIcon } from './TimeIcon';
 export { SparkleIcon } from './SparkleIcon';
 export { ExpandIcon } from './ExpandIcon';
 export { SendIcon } from './SendIcon';
+export { ReportIcon } from './ReportIcon';
+export { BlockIcon } from './BlockIcon';
+export { HiddenIcon } from './HiddenIcon';
 
 export const iconNames = [
   'search',
@@ -43,4 +46,7 @@ export const iconNames = [
   'sparkle',
   'expand',
   'send',
+  'report',
+  'block',
+  'hidden',
 ] as const;

@@ -15,9 +15,10 @@ import type { Message, PersonMini, TagRef, ThreadSummary } from '../../api/types
 import { closeThread, openThread, showPersonFromChat } from '../../app/urlState';
 import { spring, useMotionTransition, useReducedMotionPreference } from '../../motion';
 import { Aura } from '../../ui/Aura';
-import { formatClock, formatSentAt } from '../../ui/format';
+import { firstName, formatClock, formatSentAt } from '../../ui/format';
 import { BackIcon } from '../../ui/icons/generated';
 import { TagChip } from '../../ui/TagChip';
+import { SafetyMenu } from '../safety/SafetyMenu';
 import { Composer } from './Composer';
 import styles from './Conversation.module.css';
 
@@ -90,7 +91,7 @@ function ThreadConversation({
 
   const summary = thread.data;
   const glow = summary?.folder === 'glows';
-  const first = firstName(summary?.other.displayName);
+  const first = firstOrThem(summary?.other.displayName);
 
   return (
     <>
@@ -149,7 +150,7 @@ function FirstMessage({ personId }: { personId: string }) {
 
   const person = profile.data ?? null;
   const shared = person?.tags.filter((t) => t.shared) ?? [];
-  const first = firstName(person?.displayName);
+  const first = firstOrThem(person?.displayName);
 
   return (
     <>
@@ -213,6 +214,7 @@ function Header({ person, sharedTags }: { person: PersonMini | null; sharedTags?
           </span>
         </button>
       )}
+      {person && <SafetyMenu person={person} onBlocked={closeThread} />}
     </header>
   );
 }
@@ -328,6 +330,6 @@ function Messages({ messages, outbox, myId, readUpTo, onRetry, name }: MessagesP
   );
 }
 
-function firstName(displayName: string | null | undefined): string {
-  return displayName?.split(' ')[0] ?? 'them';
+function firstOrThem(displayName: string | null | undefined): string {
+  return displayName ? firstName(displayName) : 'them';
 }

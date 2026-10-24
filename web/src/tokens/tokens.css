@@ -118,6 +118,9 @@
   --color-focus: var(--amber-700);
   --shadow-sheet: 0 -8px 32px rgb(60 44 28 / 12%);
   --shadow-raised: 0 4px 16px rgb(60 44 28 / 10%);
+
+  /* Behind a dialog: dims the world without hiding it. */
+  --color-scrim: rgb(31 27 23 / 36%);
 }
 
 /* Dark theme: charcoal with a brown undertone. */
@@ -141,6 +144,7 @@
     --color-focus: var(--amber-300);
     --shadow-sheet: 0 -8px 32px rgb(8 5 3 / 45%);
     --shadow-raised: 0 4px 16px rgb(8 5 3 / 40%);
+    --color-scrim: rgb(8 5 3 / 60%);
   }
 }
 
@@ -163,4 +167,5 @@
   --color-focus: var(--amber-300);
   --shadow-sheet: 0 -8px 32px rgb(8 5 3 / 45%);
   --shadow-raised: 0 4px 16px rgb(8 5 3 / 40%);
+  --color-scrim: rgb(8 5 3 / 60%);
 }

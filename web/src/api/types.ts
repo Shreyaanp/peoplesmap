@@ -37,3 +37,7 @@ export type MessageInput = Schemas['MessageInput'];
 export type ThreadSummary = Schemas['ThreadSummary'];
 export type ThreadWithMessage = Schemas['ThreadWithMessage'];
 export type InboxSummary = Schemas['InboxSummary'];
+export type Settings = Schemas['Settings'];
+export type SettingsPatch = Schemas['SettingsPatch'];
+export type ReportInput = Schemas['ReportInput'];
+export type ReportReason = ReportInput['reason'];

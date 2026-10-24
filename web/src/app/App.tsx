@@ -4,6 +4,7 @@ import { useTagSuggestions } from '../api/tags';
 import { AppProviders } from '../state/AppProviders';
 import { SearchField } from '../ui/SearchField';
 import { tagPrefix, useSearchText, type SearchHandoff } from '../ui/searchShared';
+import { Toaster } from '../ui/Toaster';
 import { Wordmark } from '../ui/Wordmark';
 import styles from './App.module.css';
 import { MapPlaceholder } from './MapPlaceholder';
@@ -78,6 +79,7 @@ function SignedIn() {
         </Suspense>
       )}
       <InboxLayer />
+      <Toaster />
     </div>
   );
 }

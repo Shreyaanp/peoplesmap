@@ -1,4 +1,5 @@
 import { useConnect, useProfile } from '../../api/queries';
+import { SafetyMenu } from '../safety/SafetyMenu';
 import { closePerson, openDraft, openThread } from '../../app/urlState';
 import { hapticTick } from '../../motion/haptics';
 import { Aura } from '../../ui/Aura';
@@ -6,13 +7,26 @@ import { formatActivity, formatDistance, formatTimeLeft } from '../../ui/format'
 import { TagChip } from '../../ui/TagChip';
 import styles from './Profile.module.css';
 
-/** The sheet header while a profile is open: back to the map. The name is the card's heading. */
-export function ProfileHeader() {
+/**
+ * The sheet header while a profile is open: back to the map, and More (report, block) once the
+ * profile has loaded. The name is the card's heading.
+ */
+export function ProfileHeader({ id }: { id: string }) {
+  const profile = useProfile(id);
+  const person = profile.isError ? undefined : profile.data;
   return (
     <header className={styles.header}>
       <button type="button" className={styles.back} onClick={closePerson} aria-label="Back to the map">
         <span aria-hidden="true">←</span>
       </button>
+      {person && (
+        <span className={styles.more}>
+          <SafetyMenu
+            person={{ id: person.id, displayName: person.displayName, photo: person.photo }}
+            onBlocked={closePerson}
+          />
+        </span>
+      )}
     </header>
   );
 }

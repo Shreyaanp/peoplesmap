@@ -24,7 +24,7 @@ export default function PeopleSheet() {
     setSnap(personId ? 'half' : 'peek');
   }, [personId, setSnap]);
 
-  const header = personId ? <ProfileHeader /> : query ? <ResultsHeader /> : <DiscoverHeader />;
+  const header = personId ? <ProfileHeader id={personId} /> : query ? <ResultsHeader /> : <DiscoverHeader />;
 
   return (
     <LazyMotion features={domMax} strict>

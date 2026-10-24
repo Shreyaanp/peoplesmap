@@ -1,0 +1,55 @@
+/* Bottom of the screen on phones; on desktop, the bottom of the side column where sheets and the inbox live. */
+.region {
+  position: fixed;
+  right: var(--space-4);
+  bottom: max(var(--space-4), env(safe-area-inset-bottom));
+  left: var(--space-4);
+  z-index: var(--z-toast);
+  pointer-events: none;
+}
+
+@media (width >= 900px) {
+  .region {
+    right: auto;
+    left: var(--space-4);
+    width: var(--sheet-desktop-width);
+  }
+}
+
+.toast {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  justify-content: space-between;
+  min-height: var(--size-touch);
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--color-ink);
+  color: var(--color-bg);
+  font-size: var(--font-size-sm);
+  box-shadow: var(--shadow-raised);
+  pointer-events: auto;
+  animation: rise var(--duration-crisp) var(--ease-crisp-spring) both;
+}
+
+@keyframes rise {
+  from {
+    transform: translateY(calc(16px * var(--motion-scale)));
+    opacity: 0;
+  }
+}
+
+.action {
+  flex: none;
+  min-height: var(--size-touch);
+  padding: 0 var(--space-4);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: var(--font-weight-bold);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
