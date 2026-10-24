@@ -1,3 +1,7 @@
+.search {
+  position: relative;
+}
+
 .bar {
   display: flex;
   align-items: center;
@@ -51,4 +55,65 @@
 
 .clear:active {
   transform: scale(0.92);
+}
+
+/* Suggestions drop from the bar: a short crisp fall, never covering more than it needs. */
+.popover {
+  position: absolute;
+  top: calc(100% + var(--space-2));
+  right: 0;
+  left: 0;
+  transform-origin: top center;
+  animation: drop var(--duration-crisp) var(--ease-crisp) both;
+}
+
+@keyframes drop {
+  from {
+    opacity: 0;
+    transform: translateY(calc(-6px * var(--motion-scale))) scale(calc(1 - 0.02 * var(--motion-scale)));
+  }
+}
+
+.options {
+  margin: 0;
+  padding: var(--space-1);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-raised);
+  list-style: none;
+}
+
+.option {
+  display: flex;
+  gap: var(--space-3);
+  align-items: baseline;
+  justify-content: space-between;
+  min-height: var(--size-touch);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+}
+
+.option[data-focused='true'] {
+  background: var(--color-surface-raised);
+}
+
+.optionTag {
+  overflow: hidden;
+  color: var(--color-ink);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* What you typed stays regular; the rest of the tag is what the suggestion adds. */
+.optionTag b {
+  font-weight: var(--font-weight-bold);
+}
+
+.optionCount {
+  flex: none;
+  color: var(--color-ink-secondary);
+  font-size: var(--font-size-sm);
+  font-variant-numeric: tabular-nums;
 }

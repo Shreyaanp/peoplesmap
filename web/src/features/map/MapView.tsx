@@ -10,11 +10,15 @@ import styles from './MapView.module.css';
 import { PinOverlay } from './PinOverlay';
 import { useGlowTiles } from './useGlowTiles';
 import { usePeopleTiles } from './usePeopleTiles';
+import { morphEndZoom } from './zoomLevels';
 
 const devParams = new URLSearchParams(window.location.search);
 
-/** Area zoom: tag pins of the people around you, glows still breathing further out. */
-const homeZoom = 13.6;
+/**
+ * Area zoom: tag pins of the people around you, fully drawn. Opening mid-morph left every pin
+ * half transparent, too faint to read (and below WCAG contrast).
+ */
+const homeZoom = morphEndZoom;
 /** Where a search flies to (a named area, or the nearest group when results are thin): glows at full. */
 const bloomZoom = 12.8;
 

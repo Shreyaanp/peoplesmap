@@ -1,7 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { api } from './client';
 import { queryKeys, unwrap } from './core';
-import type { ExtractedTag, LatLng, LocationMode, Me, MyLocation, TagInput, TagSuggestion } from './types';
+import type { ExtractedTag, LatLng, LocationMode, Me, MyLocation, TagInput } from './types';
 
 /** Hooks for the onboarding steps: describe yourself, Tag Birth, then location and profile. */
 
@@ -13,21 +13,6 @@ export function useExtractTags() {
       // The generator reads the [start, end) tuples as plain arrays; give them their shape back.
       return tags.map((tag) => ({ ...tag, spans: tag.spans.map(([start = 0, end = 0]) => [start, end]) }));
     },
-  });
-}
-
-/** Suggestions while typing a tag, with how many people nearby use each one. */
-export function useTagSuggestions(text: string) {
-  const q = text.replace(/^#/, '').trim();
-  return useQuery<TagSuggestion[]>({
-    queryKey: ['tag-suggest', q],
-    queryFn: ({ signal }) =>
-      unwrap<{ suggestions: TagSuggestion[] }>(
-        api.GET('/tags/suggest', { params: { query: { q, limit: 6 } }, signal }),
-      ).then((r) => r.suggestions),
-    enabled: q.length >= 1,
-    staleTime: 5 * 60_000,
-    placeholderData: (previous) => previous,
   });
 }
 

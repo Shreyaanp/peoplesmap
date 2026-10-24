@@ -21,6 +21,7 @@ const screenBudgets: Record<string, number> = {
   Onboarding: 90 * kB,
   MapView: 320 * kB,
   PeopleSheet: 55 * kB,
+  SearchBar: 35 * kB,
 };
 
 const dist = resolve(import.meta.dirname, '../dist');

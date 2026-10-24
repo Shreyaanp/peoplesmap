@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode, type RefObject } from 'react';
 import { useComboBox, useListBox, useOption } from 'react-aria';
 import { Item, useComboBoxState, type ComboBoxState } from 'react-stately';
-import { useTagSuggestions } from '../../api/onboarding';
+import { useTagSuggestions } from '../../api/tags';
 import type { Key } from 'react-stately';
 import type { TagSuggestion } from '../../api/types';
 import type { TagDraft } from './draft';
@@ -71,10 +71,6 @@ export function AddTag({ taken, onAdd }: AddTagProps) {
       listBoxRef,
       popoverRef,
       allowsCustomValue: true,
-      // Enter with no suggestion highlighted adds exactly what was typed.
-      onKeyDown: (e: KeyboardEvent) => {
-        if (e.key === 'Enter' && state.selectionManager.focusedKey == null) addTyped();
-      },
     },
     state,
   );
@@ -87,13 +83,25 @@ export function AddTag({ taken, onAdd }: AddTagProps) {
     if (isFocused && hasItems && !isOpen && text.trim() !== '') open(null, 'input');
   }, [isFocused, hasItems, isOpen, open, text]);
 
+  // Enter with no suggestion highlighted adds exactly what was typed. Read the highlight before
+  // React Aria handles the key: picking an option clears it, and that Enter must not add twice.
+  const onKeyDownCapture = (e: KeyboardEvent) => {
+    if (e.key === 'Enter' && state.selectionManager.focusedKey == null) addTyped();
+  };
+
   return (
     <div className={styles.addTag}>
       <label {...labelProps} className="visuallyHidden">
         Add a tag
       </label>
       <div className={styles.addRow}>
-        <input {...inputProps} ref={inputRef} className={styles.input} maxLength={40} />
+        <input
+          {...inputProps}
+          ref={inputRef}
+          onKeyDownCapture={onKeyDownCapture}
+          className={styles.input}
+          maxLength={40}
+        />
         <button
           type="button"
           className={styles.addButton}

@@ -16,13 +16,19 @@ test('tapping a group glides in and its people spring out from it', async ({ pag
 
   await expect(page.getByRole('button', { name: /people here/ }).first()).toBeAttached({ timeout: 20_000 });
 
-  // The biggest group comfortably inside the map (clear of the search bar and the sheet peek).
+  // The biggest group comfortably inside the map, and not under the search bar or the sheet (the
+  // side panel on desktop): a tap there must reach the group itself.
   const target = await page.evaluate(() => {
     let best: { x: number; y: number; count: number } | undefined;
     for (const button of document.querySelectorAll('button[aria-label*="people here"]')) {
       const { x, y } = button.getBoundingClientRect();
       const count = Number.parseInt(button.getAttribute('aria-label') ?? '', 10);
-      const inside = x > 60 && x < innerWidth - 60 && y > 220 && y < innerHeight * 0.6;
+      const inside =
+        x > 60 &&
+        x < innerWidth - 60 &&
+        y > 220 &&
+        y < innerHeight * 0.6 &&
+        button.contains(document.elementFromPoint(x, y));
       if (inside && count >= 3 && count > (best?.count ?? 0)) best = { x, y, count };
     }
     return best;

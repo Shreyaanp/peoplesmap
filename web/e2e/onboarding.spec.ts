@@ -37,12 +37,12 @@ test('a new person describes themselves, edits their tags, picks an area and lan
   expect(await axeViolations(page)).toEqual([]);
 
   await page.getByRole('button', { name: 'Put me on the map' }).click();
-  await expect(page.getByRole('searchbox')).toBeVisible();
+  await expect(page.getByRole('combobox')).toBeVisible();
   await expect(page.getByText('Kondapur · people into different things')).toBeVisible();
 
   // The profile is saved: a reload stays on the map.
   await page.reload();
-  await expect(page.getByRole('searchbox')).toBeVisible();
+  await expect(page.getByRole('combobox')).toBeVisible();
 });
 
 test('onboarding: every interactive element is at least 44×44px', async ({ page }) => {

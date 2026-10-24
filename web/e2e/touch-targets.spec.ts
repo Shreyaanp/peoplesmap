@@ -1,5 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
-import { signIn } from './session';
+import { settle, signIn } from './session';
 
 const MIN = 44; // px, Fitts's Law; matches --size-touch
 
@@ -13,7 +13,14 @@ async function tooSmall(page: Page) {
           // The map's licence credit is inline text; WCAG 2.5.8 exempts inline links.
           .filter((el) => !el.closest('.maplibregl-ctrl-attrib-inner'))
           .map((el) => {
-            const r = el.getBoundingClientRect();
+            // Map pins are zero-size anchors; their hit area is the largest box inside, centred on the point.
+            const own = el.getBoundingClientRect();
+            const r =
+              own.width === 0 && own.height === 0
+                ? [...el.querySelectorAll('*')]
+                    .map((child) => child.getBoundingClientRect())
+                    .reduce((big, box) => (box.width * box.height > big.width * big.height ? box : big), own)
+                : own;
             return { el: el.outerHTML.slice(0, 80), w: Math.round(r.width), h: Math.round(r.height) };
           })
           .filter(({ w, h }) => w < min || h < min),
@@ -30,7 +37,9 @@ test('sign-in: every interactive element is at least 44×44px', async ({ page })
 
 test('home: every interactive element is at least 44×44px', async ({ page }) => {
   await signIn(page);
-  // Reveal conditional controls (the clear button) before measuring.
-  await page.getByRole('searchbox').fill('#badminton');
+  // Reveal conditional controls (the clear button, the suggestions) before measuring.
+  await page.getByRole('combobox').fill('#badm');
+  await expect(page.getByRole('option').first()).toBeVisible();
+  await settle(page);
   expect(await tooSmall(page)).toEqual([]);
 });

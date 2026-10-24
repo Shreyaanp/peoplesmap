@@ -16,6 +16,11 @@
   padding-top: max(var(--space-4), env(safe-area-inset-top));
 }
 
+/* While searching, the suggestions float above the sheet. */
+.chrome:focus-within {
+  z-index: var(--z-overlay);
+}
+
 /* Desktop: the search sits above the side panel, top left, like Google Maps on a laptop. */
 @media (width >= 900px) {
   .chrome {

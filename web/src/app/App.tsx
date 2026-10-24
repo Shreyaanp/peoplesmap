@@ -1,7 +1,9 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { useMe } from '../api/me';
+import { useTagSuggestions } from '../api/tags';
 import { AppProviders } from '../state/AppProviders';
-import { SearchBar } from '../ui/SearchBar';
+import { SearchField } from '../ui/SearchField';
+import { tagPrefix, useSearchText, type SearchHandoff } from '../ui/searchShared';
 import { Wordmark } from '../ui/Wordmark';
 import styles from './App.module.css';
 import { MapPlaceholder } from './MapPlaceholder';
@@ -14,6 +16,8 @@ const SignIn = lazy(() => import('../features/onboarding/SignIn'));
 const Onboarding = lazy(() => import('../features/onboarding/Onboarding'));
 // Sign-out needs TanStack's mutation code; keep it out of the first-paint bundle.
 const AccountMenu = lazy(() => import('./AccountMenu'));
+// Tag suggestions need React Aria's combobox; the plain field paints first and hands over to it.
+const SearchBar = lazy(() => import('../ui/SearchBar'));
 
 export function App() {
   return (
@@ -45,7 +49,6 @@ function Session() {
 function SignedIn() {
   // The shell (wordmark, search) paints and responds first; MapLibre's large script waits for idle.
   const mapAllowed = useAfterFirstPaint();
-  const query = useSearchQuery();
   return (
     <div className={styles.shell}>
       {mapAllowed ? (
@@ -62,7 +65,7 @@ function SignedIn() {
             <AccountMenu />
           </Suspense>
         </div>
-        <SearchBar query={query} onSubmit={search} onClear={clearSearch} />
+        <Search full={mapAllowed} />
       </header>
       {mapAllowed && (
         <Suspense fallback={null}>
@@ -70,5 +73,21 @@ function SignedIn() {
         </Suspense>
       )}
     </div>
+  );
+}
+
+/** The search bar: the plain field first, then the full bar with tag suggestions once allowed. */
+function Search({ full }: { full: boolean }) {
+  const query = useSearchQuery();
+  const [text, setText] = useSearchText(query);
+  const [handoff] = useState<SearchHandoff>(() => ({ focused: false, caret: null }));
+  const suggestions = useTagSuggestions(full ? tagPrefix(text) : '');
+  const field = { query, text, onTextChange: setText, onSubmit: search, onClear: clearSearch, handoff };
+  const plain = <SearchField {...field} />;
+  if (!full) return plain;
+  return (
+    <Suspense fallback={plain}>
+      <SearchBar {...field} suggestions={suggestions.data ?? []} />
+    </Suspense>
   );
 }

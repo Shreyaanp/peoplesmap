@@ -4,7 +4,7 @@ import { axeViolations, signIn } from './session';
 test('a hashtag search filters the same map, lists people, and back clears it', async ({ page }) => {
   test.setTimeout(60_000);
   await signIn(page);
-  const searchbox = page.getByRole('searchbox', { name: 'Search people by interest' });
+  const searchbox = page.getByRole('combobox', { name: 'Search people by interest' });
 
   await searchbox.fill('#badminton');
   await searchbox.press('Enter');
@@ -41,7 +41,7 @@ test('a hashtag search filters the same map, lists people, and back clears it', 
 
 test('a related tag runs as the next search', async ({ page }) => {
   await signIn(page);
-  const searchbox = page.getByRole('searchbox', { name: 'Search people by interest' });
+  const searchbox = page.getByRole('combobox', { name: 'Search people by interest' });
   await searchbox.fill('#badminton');
   await searchbox.press('Enter');
 
@@ -51,4 +51,20 @@ test('a related tag runs as the next search', async ({ page }) => {
 
   await expect(page.getByRole('heading', { name: tag })).toBeVisible();
   await expect(searchbox).toHaveValue(tag);
+});
+
+test('typing a tag suggests it with a local count, and picking one searches it', async ({ page }) => {
+  await signIn(page);
+  const searchbox = page.getByRole('combobox', { name: 'Search people by interest' });
+  await searchbox.fill('#badm');
+
+  const option = page.getByRole('option', { name: /^#badminton/ });
+  await expect(option).toContainText(/\d+ near /);
+  expect(await axeViolations(page)).toEqual([]);
+
+  await searchbox.press('ArrowDown');
+  await searchbox.press('Enter');
+  await expect(page).toHaveURL(/[?&]q=%23badminton/);
+  await expect(page.getByRole('heading', { name: '#badminton' })).toBeVisible();
+  await expect(page.getByRole('listbox')).toHaveCount(0);
 });
