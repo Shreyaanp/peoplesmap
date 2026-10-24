@@ -7,7 +7,7 @@ import { tagPrefix, useSearchText, type SearchHandoff } from '../ui/searchShared
 import { Wordmark } from '../ui/Wordmark';
 import styles from './App.module.css';
 import { MapPlaceholder } from './MapPlaceholder';
-import { clearSearch, search, useSearchQuery } from './urlState';
+import { clearSearch, search, useDraftWith, useInboxFolder, useOpenThread, useSearchQuery } from './urlState';
 import { useAfterFirstPaint } from './useAfterFirstPaint';
 
 const MapView = lazy(() => import('../features/map/MapView'));
@@ -18,6 +18,8 @@ const Onboarding = lazy(() => import('../features/onboarding/Onboarding'));
 const AccountMenu = lazy(() => import('./AccountMenu'));
 // Tag suggestions need React Aria's combobox; the plain field paints first and hands over to it.
 const SearchBar = lazy(() => import('../ui/SearchBar'));
+const InboxButton = lazy(() => import('../features/chat/InboxButton'));
+const Inbox = lazy(() => import('../features/chat/Inbox'));
 
 export function App() {
   return (
@@ -61,9 +63,12 @@ function SignedIn() {
       <header className={styles.chrome}>
         <div className={styles.brandRow}>
           <Wordmark />
-          <Suspense fallback={null}>
-            <AccountMenu />
-          </Suspense>
+          <div className={styles.actions}>
+            <Suspense fallback={null}>
+              <InboxButton />
+              <AccountMenu />
+            </Suspense>
+          </div>
         </div>
         <Search full={mapAllowed} />
       </header>
@@ -72,7 +77,24 @@ function SignedIn() {
           <PeopleSheet />
         </Suspense>
       )}
+      <InboxLayer />
     </div>
+  );
+}
+
+/** Messages load the first time they open, then stay mounted so they can slide away again. */
+function InboxLayer() {
+  const folder = useInboxFolder();
+  const thread = useOpenThread();
+  const draft = useDraftWith();
+  const open = folder !== null || thread !== null || draft !== null;
+  const [loaded, setLoaded] = useState(open);
+  if (open && !loaded) setLoaded(true);
+  if (!loaded) return null;
+  return (
+    <Suspense fallback={null}>
+      <Inbox />
+    </Suspense>
   );
 }
 

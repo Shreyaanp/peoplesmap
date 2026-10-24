@@ -19,6 +19,7 @@ export { LikeIcon } from './LikeIcon';
 export { TimeIcon } from './TimeIcon';
 export { SparkleIcon } from './SparkleIcon';
 export { ExpandIcon } from './ExpandIcon';
+export { SendIcon } from './SendIcon';
 
 export const iconNames = [
   'search',
@@ -41,4 +42,5 @@ export const iconNames = [
   'time',
   'sparkle',
   'expand',
+  'send',
 ] as const;

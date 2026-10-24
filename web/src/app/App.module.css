@@ -1,7 +1,7 @@
 .shell {
   position: relative;
   height: 100%;
-  overflow: hidden;
+  overflow: clip;
 }
 
 .chrome {
@@ -35,4 +35,10 @@
   align-items: center;
   justify-content: space-between;
   min-height: var(--size-touch);
+}
+
+.actions {
+  display: flex;
+  gap: var(--space-1);
+  align-items: center;
 }

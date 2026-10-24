@@ -1,5 +1,6 @@
 import { delay, http, HttpResponse, type RequestHandler } from 'msw';
-import type { LatLng, LocationMode, Problem, TagInput } from '../api/types';
+import type { LatLng, LocationMode, MessageInput, Problem, TagInput } from '../api/types';
+import { createInbox, mockReplies, type Inbox } from './data/chat';
 import { parseBbox } from './data/geo';
 import {
   addToWorld,
@@ -24,7 +25,7 @@ import {
   toMe,
 } from './data/queries';
 import { resolveTag, tagBySlug } from './data/vocabulary';
-import { createWorld, type MockWorld } from './data/world';
+import { createWorld, type MockPerson, type MockWorld } from './data/world';
 
 /**
  * Mock API handlers, shaped exactly like api/openapi.yaml.
@@ -33,6 +34,7 @@ import { createWorld, type MockWorld } from './data/world';
  * - `?people=50000` builds the stress world (default 2,000 people)
  * - `?latency=3g` (600ms), `?latency=slow` (1500ms) or `?latency=250` (ms) delays every response
  * - `?fail=0.1` fails 10% of requests with a 503 problem
+ * - `?replies=off` stops the other person answering a moment after you write
  *
  * Sign-in: the Google button signs in "you", a newcomer who goes through onboarding (credential
  * `mock-new-person` starts a fresh one); the test-person picker signs in as any seeded person.
@@ -60,6 +62,7 @@ export function resetMockWorld(next?: MockWorld): void {
   signedInId = undefined;
   newcomer = undefined;
   connections.clear();
+  inboxes.clear();
 }
 
 // Everyone starts signed out, like the real app. The dev session lives in memory and survives
@@ -70,6 +73,8 @@ let signedInId: string | undefined;
 let newcomer: Newcomer | undefined;
 /** People the dev user connects to (in memory; a reload starts fresh). */
 const connections = new Set<string>();
+/** Each signed-in person's threads, seeded on first use (in memory; a reload starts fresh). */
+const inboxes = new Map<string, Inbox>();
 try {
   signedInId = globalThis.localStorage?.getItem(sessionKey) ?? undefined;
   const saved = globalThis.localStorage?.getItem(newcomerKey);
@@ -104,6 +109,39 @@ function currentUser() {
 /** The newcomer, when they are the one signed in (onboarding or not). */
 function signedInNewcomer(): Newcomer | undefined {
   return newcomer && signedInId === newcomer.id ? newcomer : undefined;
+}
+
+/** The signed-in person's inbox. Seeding it also connects them to the people in their Chats. */
+function inboxFor(me: MockPerson): Inbox {
+  let inbox = inboxes.get(me.id);
+  if (!inbox) {
+    const seeded = createInbox(getWorld(), me);
+    inbox = seeded.inbox;
+    inboxes.set(me.id, inbox);
+    seeded.connected.forEach((id) => connections.add(id));
+  }
+  return inbox;
+}
+
+/** Stands in for the socket: the other person answers a moment after I write, once per burst. */
+const replying = new Set<string>();
+function replySoon(inbox: Inbox, threadId: string): void {
+  if (pageParams().get('replies') === 'off' || replying.has(threadId)) return;
+  replying.add(threadId);
+  setTimeout(
+    () => {
+      replying.delete(threadId);
+      inbox.receive(threadId, mockReplies[Math.floor(Math.random() * mockReplies.length)] ?? 'Hi!');
+    },
+    2000 + Math.random() * 1500,
+  );
+}
+
+function isMessageInput(value: unknown): value is MessageInput {
+  const v = value as Partial<MessageInput> | null;
+  return (
+    typeof v?.id === 'string' && typeof v.body === 'string' && v.body.trim() !== '' && v.body.length <= 2000
+  );
 }
 
 function isLatLng(value: unknown): value is LatLng {
@@ -368,6 +406,7 @@ export const handlers: RequestHandler[] = [
     return HttpResponse.json({
       ...card,
       connection: { ...card.connection, iConnect: connections.has(person.id) },
+      threadId: inboxFor(me).threadWith(person.id)?.id ?? null,
     });
   }),
 
@@ -375,10 +414,12 @@ export const handlers: RequestHandler[] = [
   http.put(`${base}/connections/:personId`, async ({ params }) => {
     const failure = await devSwitches();
     if (failure) return failure;
-    if (!currentUser()) return unauthorized();
+    const me = currentUser();
+    if (!me) return unauthorized();
     const id = String(params.personId);
     if (!getWorld().byId.has(id)) return problem(404, 'not-found', 'Person not found');
     connections.add(id);
+    inboxFor(me).connected(id);
     return HttpResponse.json({ iConnect: true, connectsToMe: false });
   }),
 
@@ -388,6 +429,127 @@ export const handlers: RequestHandler[] = [
     if (!currentUser()) return unauthorized();
     connections.delete(String(params.personId));
     return HttpResponse.json({ iConnect: false, connectsToMe: false });
+  }),
+
+  // ── chat ──
+  http.get(`${base}/me/inbox-summary`, async () => {
+    const failure = await devSwitches();
+    if (failure) return failure;
+    const me = currentUser();
+    if (!me) return unauthorized();
+    return HttpResponse.json(inboxFor(me).summary());
+  }),
+
+  http.get(`${base}/threads`, async ({ request }) => {
+    const failure = await devSwitches();
+    if (failure) return failure;
+    const me = currentUser();
+    if (!me) return unauthorized();
+    const folder = new URL(request.url).searchParams.get('folder');
+    if (folder !== 'chats' && folder !== 'glows') return problem(400, 'bad-request', 'Unknown folder');
+    return HttpResponse.json({ items: inboxFor(me).list(folder), nextCursor: null });
+  }),
+
+  http.post(`${base}/threads`, async ({ request }) => {
+    const failure = await devSwitches();
+    if (failure) return failure;
+    const me = currentUser();
+    if (!me) return unauthorized();
+    const body = (await request.json()) as { recipientId?: string; message?: unknown };
+    const other = body.recipientId ? getWorld().byId.get(body.recipientId) : undefined;
+    if (!other || other === me) return problem(404, 'not-found', 'Person not found');
+    if (!isMessageInput(body.message)) return problem(422, 'validation-failed', 'Write a message first');
+    const inbox = inboxFor(me);
+    const started = inbox.start(other, body.message);
+    replySoon(inbox, started.thread.id);
+    return HttpResponse.json(
+      { thread: started.thread, message: started.message },
+      { status: started.created ? 201 : 200 },
+    );
+  }),
+
+  http.get(`${base}/threads/:threadId`, async ({ params }) => {
+    const failure = await devSwitches();
+    if (failure) return failure;
+    const me = currentUser();
+    if (!me) return unauthorized();
+    const thread = inboxFor(me).get(String(params.threadId));
+    return thread ? HttpResponse.json(thread) : problem(404, 'not-found', 'Conversation not found');
+  }),
+
+  http.get(`${base}/threads/:threadId/messages`, async ({ params, request }) => {
+    const failure = await devSwitches();
+    if (failure) return failure;
+    const me = currentUser();
+    if (!me) return unauthorized();
+    const inbox = inboxFor(me);
+    const id = String(params.threadId);
+    if (!inbox.get(id)) return problem(404, 'not-found', 'Conversation not found');
+    const url = new URL(request.url);
+    const after = url.searchParams.get('after') ?? undefined;
+    const before = url.searchParams.get('before') ?? undefined;
+    if (after && before) return problem(400, 'bad-request', 'Use after or before, not both');
+    return HttpResponse.json(
+      inbox.messages(id, {
+        ...(after ? { after } : {}),
+        ...(before ? { before } : {}),
+        limit: limitParam(url),
+      }),
+    );
+  }),
+
+  http.post(`${base}/threads/:threadId/messages`, async ({ params, request }) => {
+    const failure = await devSwitches();
+    if (failure) return failure;
+    const me = currentUser();
+    if (!me) return unauthorized();
+    const input: unknown = await request.json();
+    if (!isMessageInput(input)) return problem(422, 'validation-failed', 'Write a message first');
+    const inbox = inboxFor(me);
+    const id = String(params.threadId);
+    const sent = inbox.send(id, input);
+    if (!sent) return problem(404, 'not-found', 'Conversation not found');
+    if (sent.created) replySoon(inbox, id);
+    return HttpResponse.json(sent.message, { status: sent.created ? 201 : 200 });
+  }),
+
+  http.post(`${base}/threads/:threadId/read`, async ({ params, request }) => {
+    const failure = await devSwitches();
+    if (failure) return failure;
+    const me = currentUser();
+    if (!me) return unauthorized();
+    const { upTo } = (await request.json()) as { upTo?: string };
+    return upTo && inboxFor(me).markRead(String(params.threadId), upTo)
+      ? new HttpResponse(null, { status: 204 })
+      : problem(404, 'not-found', 'Conversation not found');
+  }),
+
+  http.post(`${base}/threads/:threadId/accept`, async ({ params }) => {
+    const failure = await devSwitches();
+    if (failure) return failure;
+    const me = currentUser();
+    if (!me) return unauthorized();
+    const thread = inboxFor(me).accept(String(params.threadId));
+    return thread ? HttpResponse.json(thread) : problem(404, 'not-found', 'Conversation not found');
+  }),
+
+  http.post(`${base}/threads/:threadId/ignore`, async ({ params }) => {
+    const failure = await devSwitches();
+    if (failure) return failure;
+    const me = currentUser();
+    if (!me) return unauthorized();
+    return inboxFor(me).ignore(String(params.threadId))
+      ? new HttpResponse(null, { status: 204 })
+      : problem(404, 'not-found', 'Conversation not found');
+  }),
+
+  http.delete(`${base}/threads/:threadId/ignore`, async ({ params }) => {
+    const failure = await devSwitches();
+    if (failure) return failure;
+    const me = currentUser();
+    if (!me) return unauthorized();
+    const thread = inboxFor(me).unignore(String(params.threadId));
+    return thread ? HttpResponse.json(thread) : problem(404, 'not-found', 'Conversation not found');
   }),
 ];
 

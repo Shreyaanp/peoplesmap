@@ -23,3 +23,20 @@ export function formatTimeLeft(expiresAt: string, now = Date.now()): string {
   if (minutes >= 60) return `${Math.round(minutes / 60)}h left`;
   return `${minutes}m left`;
 }
+
+/** When a message was sent, as short as the inbox needs: "now", "5m", "3h", "Mon", "12 Oct". */
+export function formatSentAt(sentAt: string, now = Date.now()): string {
+  const at = Date.parse(sentAt);
+  const minutes = Math.floor((now - at) / 60_000);
+  if (minutes < 1) return 'now';
+  if (minutes < 60) return `${minutes}m`;
+  if (minutes < 24 * 60) return `${Math.floor(minutes / 60)}h`;
+  const options: Intl.DateTimeFormatOptions =
+    minutes < 6 * 24 * 60 ? { weekday: 'short' } : { day: 'numeric', month: 'short' };
+  return new Intl.DateTimeFormat('en-IN', options).format(at);
+}
+
+/** A message's time of day for its label: "7:42 pm". */
+export function formatClock(sentAt: string): string {
+  return new Intl.DateTimeFormat('en-IN', { hour: 'numeric', minute: '2-digit' }).format(Date.parse(sentAt));
+}

@@ -2,7 +2,7 @@
   {
     "name": "All CSS, lazy screens included (MapLibre's stylesheet is ~11 kB of it)",
     "path": "dist/assets/*.css",
-    "limit": "22 kB",
+    "limit": "25 kB",
     "gzip": true
   },
   {

@@ -22,6 +22,9 @@ const screenBudgets: Record<string, number> = {
   MapView: 320 * kB,
   PeopleSheet: 55 * kB,
   SearchBar: 35 * kB,
+  InboxButton: 3 * kB,
+  // Counted alone; in practice Motion and React Aria are already loaded by the sheet and search bar.
+  Inbox: 72 * kB,
 };
 
 const dist = resolve(import.meta.dirname, '../dist');

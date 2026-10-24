@@ -8,6 +8,12 @@ export const queryKeys = {
   discover: ['discover'] as const,
   person: (id: string) => ['person', id] as const,
   search: (q: string) => ['search', q] as const,
+  /** Everything under 'inbox' refreshes together when a message moves between folders. */
+  inbox: ['inbox'] as const,
+  inboxSummary: ['inbox', 'summary'] as const,
+  threads: (folder: string) => ['inbox', 'threads', folder] as const,
+  thread: (id: string) => ['inbox', 'thread', id] as const,
+  messages: (threadId: string) => ['inbox', 'messages', threadId] as const,
 };
 
 /** A failed API call, with the HTTP status and problem code so callers can react to the cause. */
@@ -34,4 +40,12 @@ export async function unwrap<T>(
 /** The problem code of a failed call, if the server sent one. */
 export function problemCode(error: unknown): Problem['code'] | undefined {
   return error instanceof ApiError ? error.code : undefined;
+}
+
+/** For calls answered with 204 No Content: resolves when they succeed, throws like `unwrap` when not. */
+export async function noContent(
+  promise: Promise<{ error?: { title: string; code?: Problem['code'] }; response: Response }>,
+): Promise<void> {
+  const { error, response } = await promise;
+  if (error) throw new ApiError(error.title, response.status, error.code);
 }

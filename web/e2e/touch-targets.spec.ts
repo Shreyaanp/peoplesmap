@@ -43,3 +43,23 @@ test('home: every interactive element is at least 44×44px', async ({ page }) =>
   await settle(page);
   expect(await tooSmall(page)).toEqual([]);
 });
+
+test('inbox: every interactive element is at least 44×44px', async ({ page }) => {
+  await signIn(page);
+  await page.getByRole('button', { name: /^Messages/ }).click();
+  await page.getByRole('tab', { name: /Glows/ }).click();
+  await expect(page.getByRole('list', { name: 'Glows' })).toBeVisible();
+  await settle(page);
+  expect(await tooSmall(page)).toEqual([]);
+
+  await page
+    .getByRole('list', { name: 'Glows' })
+    .getByRole('listitem')
+    .first()
+    .getByRole('button')
+    .first()
+    .click();
+  await expect(page.getByRole('log')).toBeVisible();
+  await settle(page);
+  expect(await tooSmall(page)).toEqual([]);
+});

@@ -1,5 +1,5 @@
 import { useConnect, useProfile } from '../../api/queries';
-import { closePerson } from '../../app/urlState';
+import { closePerson, openDraft, openThread } from '../../app/urlState';
 import { hapticTick } from '../../motion/haptics';
 import { Aura } from '../../ui/Aura';
 import { formatActivity, formatDistance, formatTimeLeft } from '../../ui/format';
@@ -77,8 +77,7 @@ export function ProfileBody({ id }: { id: string }) {
         <button
           type="button"
           className={styles.secondary}
-          aria-disabled="true"
-          title="Chat arrives in the next build"
+          onClick={() => (person.threadId ? openThread(person.threadId) : openDraft(person.id))}
         >
           Chat
         </button>

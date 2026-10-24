@@ -16,8 +16,8 @@ export default function PeopleSheet() {
   const query = useSearchQuery();
   const { setSnap } = useSheetActions();
 
-  // Opening a profile lifts the sheet to half; closing it drops back to the peek.
-  const previous = useRef(personId);
+  // Opening a profile lifts the sheet to half (a shared link too); closing it drops back to the peek.
+  const previous = useRef<string | null>(null);
   useEffect(() => {
     if (previous.current === personId) return;
     previous.current = personId;

@@ -1,9 +1,11 @@
 import { useSyncExternalStore } from 'react';
 
 /**
- * Shareable UI state lives in the URL: `?q=` is the search, `?person=<id>` the open profile.
- * Starting either pushes a history entry, so the back button undoes it (Jakob's Law: behave like
- * Google Maps): back from a profile returns to the results, back again clears the search.
+ * Shareable UI state lives in the URL: `?q=` is the search, `?person=<id>` the open profile,
+ * `?inbox=chats|glows` the inbox, `?thread=<id>` a conversation and `?with=<id>` a first message
+ * to someone. Starting any of them pushes a history entry, so the back button undoes it (Jakob's
+ * Law: behave like Google Maps): back from a profile returns to the results, back again clears the
+ * search.
  */
 
 const changeEvent = 'peoplemap:urlchange';
@@ -17,7 +19,7 @@ function subscribe(onChange: () => void) {
   };
 }
 
-type Entry = 'person' | 'search';
+type Entry = 'person' | 'search' | 'inbox' | 'thread';
 
 function navigate(update: (params: URLSearchParams) => void, mode: 'push' | 'replace', entry?: Entry) {
   const url = new URL(window.location.href);
@@ -76,4 +78,90 @@ export function clearSearch(): void {
   if (!getQuery()) return;
   if (pushedFor('search') && !getPerson()) window.history.back();
   else navigate((p) => p.delete('q'), 'replace');
+}
+
+export type InboxFolder = 'chats' | 'glows';
+
+const param = (name: string) => () => new URLSearchParams(window.location.search).get(name);
+const getFolder = param('inbox');
+const getThread = param('thread');
+const getDraft = param('with');
+
+/** The inbox folder on show, or null when the inbox is closed. A conversation keeps it open too. */
+export function useInboxFolder(): InboxFolder | null {
+  const folder = useSyncExternalStore(subscribe, getFolder, () => null);
+  return folder === 'chats' || folder === 'glows' ? folder : null;
+}
+
+/** The open conversation's thread id, or null. */
+export function useOpenThread(): string | null {
+  return useSyncExternalStore(subscribe, getThread, () => null);
+}
+
+/** The person a first message is being written to (no conversation yet), or null. */
+export function useDraftWith(): string | null {
+  return useSyncExternalStore(subscribe, getDraft, () => null);
+}
+
+export function openInbox(folder: InboxFolder = 'chats'): void {
+  navigate((p) => p.set('inbox', folder), 'push', 'inbox');
+}
+
+/** Switching folders replaces, so back still closes the inbox in one step. */
+export function showFolder(folder: InboxFolder): void {
+  navigate((p) => p.set('inbox', folder), 'replace');
+}
+
+export function closeInbox(): void {
+  if (!getFolder() && !getThread() && !getDraft()) return;
+  if (pushedFor('inbox')) window.history.back();
+  else
+    navigate((p) => {
+      p.delete('inbox');
+      p.delete('thread');
+      p.delete('with');
+    }, 'replace');
+}
+
+/** Opens a conversation over whatever is showing (the inbox, a profile); back returns to it. */
+export function openThread(id: string): void {
+  // A first message that just became a conversation swaps in place.
+  const mode = getDraft() ? 'replace' : 'push';
+  navigate(
+    (p) => {
+      p.set('thread', id);
+      p.delete('with');
+    },
+    mode,
+    'thread',
+  );
+}
+
+/** Opens a first message to someone we have no conversation with yet. */
+export function openDraft(personId: string): void {
+  navigate((p) => p.set('with', personId), 'push', 'thread');
+}
+
+export function closeThread(): void {
+  if (!getThread() && !getDraft()) return;
+  if (pushedFor('thread')) window.history.back();
+  else
+    navigate((p) => {
+      p.delete('thread');
+      p.delete('with');
+    }, 'replace');
+}
+
+/** From a conversation to that person's profile on the map; back returns to the conversation. */
+export function showPersonFromChat(id: string): void {
+  navigate(
+    (p) => {
+      p.delete('inbox');
+      p.delete('thread');
+      p.delete('with');
+      p.set('person', id);
+    },
+    'push',
+    'person',
+  );
 }

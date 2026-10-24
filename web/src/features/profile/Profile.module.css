@@ -114,11 +114,6 @@
   color: var(--color-ink);
 }
 
-.secondary[aria-disabled='true'] {
-  color: var(--color-ink-muted);
-  cursor: not-allowed;
-}
-
 .primary:active,
 .secondary:active {
   transform: scale(calc(1 - 0.04 * var(--motion-scale)));

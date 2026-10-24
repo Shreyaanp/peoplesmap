@@ -1,0 +1,64 @@
+.composer {
+  display: flex;
+  flex: none;
+  gap: var(--space-2);
+  align-items: flex-end;
+  padding: var(--space-3) var(--space-3) max(var(--space-3), env(safe-area-inset-bottom));
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  min-height: var(--size-touch);
+  max-height: 160px;
+  padding: calc((var(--size-touch) - 1.5em - 2px) / 2) var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: calc(var(--size-touch) / 2);
+  background: var(--color-surface-raised);
+  color: var(--color-ink);
+  font: inherit;
+  line-height: var(--line-height-body);
+  field-sizing: content;
+  resize: none;
+}
+
+.input::placeholder {
+  color: var(--color-ink-muted);
+}
+
+.input:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 1px;
+}
+
+/* The one main action on this screen: amber. */
+.send {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: var(--size-touch);
+  height: var(--size-touch);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
+  cursor: pointer;
+  transition:
+    transform var(--duration-crisp-short) var(--ease-crisp-spring),
+    opacity var(--duration-crisp-short) var(--ease-crisp);
+}
+
+.send:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.send:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.send:not(:disabled):active {
+  transform: scale(calc(1 - 0.08 * var(--motion-scale)));
+}

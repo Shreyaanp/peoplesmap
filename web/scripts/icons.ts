@@ -31,6 +31,7 @@ const icons = {
   time: 'clock',
   sparkle: 'sparkle',
   expand: 'caret-down',
+  send: 'paper-plane-right',
 } as const;
 
 const weights = ['light', 'regular', 'duotone'] as const;

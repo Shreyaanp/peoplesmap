@@ -1,0 +1,203 @@
+/*
+ * Phones: a full panel over the map, sliding in from the inbox button's side.
+ * Desktop: the left column, over the search and side panel, so the map stays in view.
+ * Closed, it waits off screen (inert) so it can slide back the way it came.
+ */
+.panel {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-overlay);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: var(--color-bg);
+  color: var(--color-ink);
+  transition:
+    transform var(--duration-crisp-long) var(--ease-crisp),
+    opacity var(--duration-crisp) var(--ease-crisp);
+}
+
+.panel[data-open='false'] {
+  transform: translateX(calc(100% * var(--motion-scale)));
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* The first opening slides in too (the panel mounts already open). */
+@starting-style {
+  .panel[data-open='true'] {
+    transform: translateX(calc(100% * var(--motion-scale)));
+    opacity: 0;
+  }
+}
+
+@media (width >= 900px) {
+  .panel {
+    inset: var(--space-4) auto var(--space-4) var(--space-4);
+    width: var(--sheet-desktop-width);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-sheet);
+  }
+
+  .panel[data-open='false'] {
+    transform: translateX(calc(-16px * var(--motion-scale)));
+  }
+
+  @starting-style {
+    .panel[data-open='true'] {
+      transform: translateX(calc(-16px * var(--motion-scale)));
+    }
+  }
+}
+
+.home {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.header {
+  display: flex;
+  flex: none;
+  gap: var(--space-2);
+  align-items: center;
+  padding: max(var(--space-3), env(safe-area-inset-top)) var(--space-4) var(--space-2) var(--space-2);
+}
+
+.iconButton {
+  display: grid;
+  place-items: center;
+  width: var(--size-touch);
+  height: var(--size-touch);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--color-ink);
+  cursor: pointer;
+}
+
+.iconButton:hover {
+  background: var(--color-surface-raised);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+}
+
+.title:focus {
+  outline: none;
+}
+
+/* Two folders as a quiet segmented control; the selected one is a raised surface, not amber. */
+.tabs {
+  display: grid;
+  flex: none;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-1);
+  margin: 0 var(--space-4) var(--space-2);
+  padding: var(--space-1);
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-raised);
+}
+
+.tab {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+  justify-content: center;
+  min-height: var(--size-touch);
+  border-radius: var(--radius-pill);
+  color: var(--color-ink-secondary);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: transform var(--duration-crisp-short) var(--ease-crisp-spring);
+}
+
+.tab[aria-selected='true'] {
+  background: var(--color-bg);
+  box-shadow: var(--shadow-raised);
+  color: var(--color-ink);
+  font-weight: var(--font-weight-bold);
+}
+
+.tab:active {
+  transform: scale(calc(1 - 0.03 * var(--motion-scale)));
+}
+
+.tab:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.count {
+  min-width: 20px;
+  padding: 0 var(--space-1);
+  border-radius: var(--radius-pill);
+  background: var(--color-ink);
+  color: var(--color-bg);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  line-height: 20px;
+  text-align: center;
+}
+
+.folder {
+  flex: 1;
+  min-height: 0;
+  padding: 0 var(--space-2) max(var(--space-6), env(safe-area-inset-bottom));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.folder:focus-visible {
+  outline: none;
+}
+
+.toast {
+  position: absolute;
+  right: var(--space-4);
+  bottom: max(var(--space-4), env(safe-area-inset-bottom));
+  left: var(--space-4);
+  z-index: var(--z-toast);
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
+  border-radius: var(--radius-lg);
+  background: var(--color-ink);
+  color: var(--color-bg);
+  font-size: var(--font-size-sm);
+  box-shadow: var(--shadow-raised);
+  animation: rise var(--duration-crisp) var(--ease-crisp-spring) both;
+}
+
+@keyframes rise {
+  from {
+    transform: translateY(calc(16px * var(--motion-scale)));
+    opacity: 0;
+  }
+}
+
+.undo {
+  flex: none;
+  min-height: var(--size-touch);
+  padding: 0 var(--space-4);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: var(--font-weight-bold);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}

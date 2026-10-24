@@ -1,0 +1,254 @@
+/* Slides over the folder list; the same surface, so it reads as the next page of one panel. */
+.conversation {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background: inherit;
+}
+
+.header {
+  display: flex;
+  flex: none;
+  gap: var(--space-1);
+  align-items: center;
+  padding: max(var(--space-3), env(safe-area-inset-top)) var(--space-3) var(--space-2) var(--space-2);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.back {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: var(--size-touch);
+  height: var(--size-touch);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: none;
+  color: var(--color-ink);
+  cursor: pointer;
+}
+
+.person {
+  display: flex;
+  gap: var(--space-3);
+  align-items: center;
+  min-width: 0;
+  min-height: var(--size-touch);
+  padding: var(--space-1) var(--space-3) var(--space-1) var(--space-1);
+  border: 0;
+  border-radius: var(--radius-pill);
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.back:hover,
+.person:hover {
+  background: var(--color-surface-raised);
+}
+
+.avatar {
+  flex: none;
+  width: 36px;
+  height: 36px;
+}
+
+.who {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.name {
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+}
+
+.sub {
+  overflow: hidden;
+  color: var(--color-ink-secondary);
+  font-size: var(--font-size-xs);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.messages {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  padding: var(--space-4) var(--space-4) var(--space-2);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* Few messages sit at the bottom, near the composer, like any messaging app. */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin: auto 0 0;
+  padding: 0;
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  list-style: none;
+}
+
+.item[data-mine='true'] {
+  align-items: flex-end;
+}
+
+.item[data-group-start='true'] {
+  margin-top: var(--space-3);
+}
+
+.timeLabel {
+  align-self: center;
+  margin-bottom: var(--space-3);
+  color: var(--color-ink-muted);
+  font-size: var(--font-size-xs);
+}
+
+/*
+ * Theirs: a raised warm surface. Mine: ink on the page colour, which flips with the theme.
+ * Neither is amber: amber stays for people on the map and the Send button.
+ */
+.bubble {
+  max-width: min(78%, 420px);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface-raised);
+  line-height: var(--line-height-body);
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.item[data-mine='true'] .bubble {
+  border-color: transparent;
+  background: var(--color-ink);
+  color: var(--color-bg);
+}
+
+.item[data-pending='true'] .bubble {
+  opacity: 0.7;
+}
+
+.receipt {
+  margin-top: var(--space-1);
+  color: var(--color-ink-muted);
+  font-size: var(--font-size-xs);
+}
+
+.retry {
+  min-height: var(--size-touch);
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-ink);
+  font: inherit;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.intro {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-2);
+  align-items: center;
+  justify-content: flex-end;
+  padding: var(--space-6) var(--space-4);
+  text-align: center;
+}
+
+.introTitle {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+}
+
+.introText {
+  margin: 0;
+  color: var(--color-ink-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.introTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  justify-content: center;
+}
+
+.glowBar {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  gap: var(--space-2) var(--space-3);
+  align-items: center;
+  justify-content: space-between;
+  margin: 0 var(--space-3);
+  padding: var(--space-3);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-raised);
+}
+
+.glowNote {
+  flex: 1 1 200px;
+  margin: 0;
+  color: var(--color-ink-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.glowChoices {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.secondary,
+.quiet {
+  min-height: var(--size-touch);
+  padding: 0 var(--space-4);
+  border-radius: var(--radius-pill);
+  font: inherit;
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+}
+
+.secondary {
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-ink);
+}
+
+.quiet {
+  border: 0;
+  background: none;
+  color: var(--color-ink-secondary);
+}
+
+.problem {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  align-items: flex-start;
+  padding: var(--space-6) var(--space-4);
+  color: var(--color-ink-secondary);
+}
+
+.problem p {
+  margin: 0;
+}
